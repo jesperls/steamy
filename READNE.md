@@ -1,2 +1,0 @@
-Collaborators:
-Jesper Lönn Stråle
