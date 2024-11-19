@@ -1,2 +1,2 @@
-Collaborators:
-Jesper Lönn Stråle
+# Collaborators:
+* Jesper Lönn Stråle
