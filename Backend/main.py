@@ -1,12 +1,22 @@
 from fastapi import FastAPI
+from . import models, crud, database
 
 app = FastAPI()
+models.Base.metadata.create_all(bind=database.engine)
+
+def get_db():
+    db = database.SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()
 
 
 # Register a new user
 @app.post("/register")
-def register():
+def register( db: Session = Depends(get_db)): # ish ? 
     return "AAA"
+    # return crud.create_user()
 
 
 # User login
