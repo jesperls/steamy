@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'screens/welcome_screen.dart'; // Import the WelcomeScreen file
+import 'screens/welcome_screen.dart';
+import 'screens/message_screen.dart';
 
 void main() {
   runApp(const MainApp());
@@ -21,8 +22,11 @@ class MainApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      // Replace MainPage with WelcomeScreen
-      home:  WelcomeScreen(),
+      initialRoute: '/', // Set the initial route to the home page
+      routes: {
+        '/': (context) => WelcomeScreen(), // Main starting screen
+        '/messages': (context) => MessagePage(), // Navigation to MessagePage
+      },
     );
   }
 }

@@ -4,7 +4,7 @@ class WelcomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Color(0xFF6A4AE0), // Purple background color
+      backgroundColor: const Color(0xFF6A4AE0), // Purple background color
       body: SafeArea(
         child: Center(
           child: Column(
@@ -15,7 +15,7 @@ class WelcomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(top: 40.0),
                 child: Text(
                   'Steamy',
-                  style: TextStyle(
+                  style: const TextStyle(
                     fontSize: 42,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -24,7 +24,7 @@ class WelcomeScreen extends StatelessWidget {
               ),
               // Tagline "Find Your Perfect PARTNER"
               Column(
-                children: [
+                children: const [
                   Text(
                     'Find Your',
                     style: TextStyle(
@@ -42,6 +42,18 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                 ],
               ),
+              // Navigation Button - Placed Here
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pushNamed(context, '/messages');
+                },
+                child: const Text('Go to Messages'),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.yellow[700], // Button color
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                ),
+              ),
               // Background design (simulated with emoji-like icons)
               Expanded(
                 child: Stack(
@@ -50,7 +62,7 @@ class WelcomeScreen extends StatelessWidget {
                       top: 50,
                       left: 40,
                       child: Icon(Icons.favorite,
-                          size: 50, color: Color(0xFFFFD700)),
+                          size: 50, color: const Color(0xFFFFD700)),
                     ),
                     Positioned(
                       bottom: 80,
@@ -62,7 +74,7 @@ class WelcomeScreen extends StatelessWidget {
                       bottom: 20,
                       left: 40,
                       child: Icon(Icons.favorite,
-                          size: 50, color: Color(0xFFFFD700)),
+                          size: 50, color: const Color(0xFFFFD700)),
                     ),
                   ],
                 ),
@@ -72,7 +84,7 @@ class WelcomeScreen extends StatelessWidget {
                 padding: const EdgeInsets.only(bottom: 30.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
+                  children: const [
                     Icon(Icons.star_border, color: Colors.white, size: 32),
                     SizedBox(width: 20),
                     Icon(Icons.star, color: Color(0xFFFFD700), size: 32),
