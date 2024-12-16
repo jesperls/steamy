@@ -1,0 +1,9 @@
+name: dating_app
+description: A dating app backend logic with Dart
+version: 1.0.0
+
+dependencies:
+    http: ^0.15.0
+    flutter:
+        sdk: flutter
+    provider: ^6.0.0
