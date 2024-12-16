@@ -1,18 +1,36 @@
-//import 'package:flutter/material.dart';
+import 'package:flutter/material.dart';
 
 void main() {
-  runApp(DatingApp());
+  runApp(const MyApp());
 }
 
-class DatingApp extends StatelessWidget {
+class MyApp extends StatelessWidget {
+  const MyApp({Key? key}) : super(key: key);
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Dating App',
+      title: 'Frontend Dating App',
       theme: ThemeData(
         primarySwatch: Colors.pink,
       ),
-      home: LoginPage(),
+      home: const HomePage(),
+    );
+  }
+}
+
+class HomePage extends StatelessWidget {
+  const HomePage({Key? key}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Welcome'),
+      ),
+      body: const Center(
+        child: Text('Welcome to the Dating App Frontend!'),
+      ),
     );
   }
 }
