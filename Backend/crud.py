@@ -27,9 +27,9 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 
-def authenticate_user(db: Session, email: str, password: str):
-    user = get_user_by_email(db, email)
-    if not user or not pwd_context.verify(password, user.password_hash):
+def authenticate_user(db: Session, credentials: schemas.UserLogin):
+    user = get_user_by_email(db, email=credentials.email)
+    if not user or not pwd_context.verify(credentials.password, user.password_hash):
         return None
     return user
 
@@ -42,8 +42,8 @@ def update_user(db: Session, db_user: models.User, user: schemas.UserUpdate):
     return db_user
 
 
-def get_next_match(db: Session):
-    return {"message": "Next match functionality :)"}
+def get_next_match(db: Session, user_action: schemas.UserAction):
+    return db.query(models.User).filter(models.User.id != user_action.user_id).first()
 
 
 def send_message(db: Session, message: schemas.MessageCreate):
@@ -51,11 +51,16 @@ def send_message(db: Session, message: schemas.MessageCreate):
         db.query(models.Match)
         .filter(
             and_(
-                models.Match.id == message.match_id,
                 models.Match.is_matched == True,
                 or_(
-                    models.Match.user_id_1 == message.sender_id,
-                    models.Match.user_id_2 == message.sender_id,
+                    and_(
+                        models.Match.user_id_1 == message.sender_id,
+                        models.Match.user_id_2 == message.receiver_id,
+                    ),
+                    and_(
+                        models.Match.user_id_1 == message.receiver_id,
+                        models.Match.user_id_2 == message.sender_id,
+                    ),
                 ),
             )
         )
@@ -68,7 +73,7 @@ def send_message(db: Session, message: schemas.MessageCreate):
         }
 
     db_message = models.Message(
-        match_id=message.match_id,
+        match_id=match.id,
         sender_id=message.sender_id,
         message_text=message.message_text,
     )
@@ -78,11 +83,12 @@ def send_message(db: Session, message: schemas.MessageCreate):
     return db_message
 
 
-def create_or_update_match(db: Session, matcher_id: int, matched_id: int):
+def create_or_update_match(db: Session, action: schemas.MatchAction):
     existing_match = (
         db.query(models.Match)
         .filter(
-            models.Match.user_id_1 == matched_id, models.Match.user_id_2 == matcher_id
+            models.Match.user_id_1 == action.matched_id,
+            models.Match.user_id_2 == action.matcher_id,
         )
         .first()
     )
@@ -95,20 +101,75 @@ def create_or_update_match(db: Session, matcher_id: int, matched_id: int):
         existing_match = (
             db.query(models.Match)
             .filter(
-                models.Match.user_id_1 == matcher_id,
-                models.Match.user_id_2 == matched_id,
+                models.Match.user_id_1 == action.matcher_id,
+                models.Match.user_id_2 == action.matched_id,
             )
             .first()
         )
         if existing_match:
             return {"error": "Match already initiated."}
         new_match = models.Match(
-            user_id_1=matcher_id, user_id_2=matched_id, is_matched=False
+            user_id_1=action.matcher_id, user_id_2=action.matched_id, is_matched=False
         )
         db.add(new_match)
         db.commit()
         db.refresh(new_match)
         return new_match
+
+
+def get_matches(db: Session, user_action: schemas.UserAction):
+    user = (
+        db.query(models.User)
+        .filter(models.User.id == user_action.user_id)
+        .first()
+    )
+    matches = user.matches + user.matches_as_second_user
+    return matches
+
+
+def get_messages(db: Session, message: schemas.MessageGet):
+    match = (
+        db.query(models.Match)
+        .filter(
+            or_(
+                and_(
+                    models.Match.user_id_1 == message.user_id_1,
+                    models.Match.user_id_2 == message.user_id_2,
+                ),
+                and_(
+                    models.Match.user_id_1 == message.user_id_2,
+                    models.Match.user_id_2 == message.user_id_1,
+                ),
+            )
+        )
+        .first()
+    )
+    if not match:
+        return []
+    return match.messages
+
+
+def get_user_by_id(db: Session, id: int):
+    return db.query(models.User).filter(models.User.id == id).first()
+
+
+def get_user_summary(db: Session, action: schemas.UserAction):
+    user = get_user_by_id(db, action.user_id)
+    if not user:
+        return None
+    minified = {
+        "display_name": user.display_name,
+        "bio": user.bio,
+        "preferences": user.preferences,
+        "location_lat": user.location_lat,
+        "location_lon": user.location_lon,
+        "pictures": [
+            {"id": picture.id, "picture_url": picture.picture_url}
+            for picture in user.pictures
+        ],
+        "interests": [interest.interest for interest in user.interests],
+    }
+    return minified
 
 
 def calculate_match_score(user1: models.User, user2: models.User) -> float:
