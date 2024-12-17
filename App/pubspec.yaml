@@ -17,4 +17,20 @@ dev_dependencies:
     flutter_lints: ^4.0.0
 
 flutter:
-    uses-material-design: true
+  fonts:
+    - family: CherryBombOne
+      fonts:
+        - asset: assets/fonts/CherryBombOne-Regular.ttf
+    - family: Chewy
+      fonts:
+        - asset: assets/fonts/Chewy-Regular.ttf
+
+  assets:
+    - assets/images/heart1.png
+    - assets/images/heart2.png
+    - assets/images/heart3.png
+    - assets/images/heart4.png
+    - assets/images/heart5.png
+    - assets/images/heart6.png
+    - assets/images/footer_sticker.png
+
