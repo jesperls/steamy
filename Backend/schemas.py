@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from typing import Optional, List
+from typing import Optional
 
 
 class UserBase(BaseModel):
@@ -20,7 +20,12 @@ class UserLogin(BaseModel):
     password: str
 
 
+class UserAction(BaseModel):
+    user_id: int
+
+
 class UserUpdate(BaseModel):
+    id: int
     email: Optional[str] = None
     display_name: Optional[str] = None
     bio: Optional[str] = None
@@ -59,9 +64,14 @@ class Message(BaseModel):
 
 
 class MessageCreate(BaseModel):
-    match_id: int
     sender_id: int
+    receiver_id: int
     message_text: str
+
+
+class MessageGet(BaseModel):
+    user_id_1: int
+    user_id_2: int
 
 
 class MatchAction(BaseModel):

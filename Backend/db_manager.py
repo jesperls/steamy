@@ -1,7 +1,6 @@
 import os
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text, inspect
 from sqlalchemy.orm import sessionmaker, scoped_session, Session
-import crud, schemas
 from models import Base
 
 DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///./Database/database.db")
@@ -13,26 +12,29 @@ SessionLocal = scoped_session(
     sessionmaker(autocommit=False, autoflush=False, bind=engine)
 )
 
-
 def init_db():
-    Base.metadata.create_all(bind=engine)
     db: Session = SessionLocal()
     try:
-        user = crud.get_user_by_email(db, "devnull@darkrage.com")
-        if not user:
-            devnull_user = schemas.UserCreate(
-                email="devnull@darkrage.com",
-                display_name="Devnull",
-                password="orsismells",
-                bio="Meow",
-                preferences=None,
-                location_lat=None,
-                location_lon=None,
-            )
-            crud.create_user(db, devnull_user)
+        inspector = inspect(engine)
+        tables = inspector.get_table_names()
+        if not tables:
+            Base.metadata.create_all(bind=engine)
+            sql_file_path = os.path.join(os.path.dirname(__file__), 'database', 'test_data.sql')
+            load_sql_file(db, sql_file_path)
+        else:
+            Base.metadata.create_all(bind=engine)
     finally:
         db.close()
 
+
+def load_sql_file(db: Session, file_path: str):
+    with open(file_path, 'r') as file:
+        sql = file.read()
+    statements = sql.strip().split(';')
+    for statement in statements:
+        if statement.strip():
+            db.execute(text(statement))
+    db.commit()
 
 def get_db():
     db = SessionLocal()
