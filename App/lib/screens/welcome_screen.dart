@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class WelcomeScreen extends StatelessWidget {
+  const WelcomeScreen({super.key});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -11,11 +13,11 @@ class WelcomeScreen extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
               // Title "Steamy"
-              Padding(
-                padding: const EdgeInsets.only(top: 40.0),
+              const Padding(
+                padding: EdgeInsets.only(top: 40.0),
                 child: Text(
                   'Steamy',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 42,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -23,8 +25,8 @@ class WelcomeScreen extends StatelessWidget {
                 ),
               ),
               // Tagline "Find Your Perfect PARTNER"
-              Column(
-                children: const [
+              const Column(
+                children: [
                   Text(
                     'Find Your',
                     style: TextStyle(
@@ -47,22 +49,22 @@ class WelcomeScreen extends StatelessWidget {
                 onPressed: () {
                   Navigator.pushNamed(context, '/messages');
                 },
-                child: const Text('Go to Messages'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.yellow[700], // Button color
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
                 ),
+                child: const Text('Go to Messages'),
               ),
               // Background design (simulated with emoji-like icons)
-              Expanded(
+              const Expanded(
                 child: Stack(
                   children: [
                     Positioned(
                       top: 50,
                       left: 40,
                       child: Icon(Icons.favorite,
-                          size: 50, color: const Color(0xFFFFD700)),
+                          size: 50, color: Color(0xFFFFD700)),
                     ),
                     Positioned(
                       bottom: 80,
@@ -74,17 +76,17 @@ class WelcomeScreen extends StatelessWidget {
                       bottom: 20,
                       left: 40,
                       child: Icon(Icons.favorite,
-                          size: 50, color: const Color(0xFFFFD700)),
+                          size: 50, color: Color(0xFFFFD700)),
                     ),
                   ],
                 ),
               ),
               // Footer with some shapes
-              Padding(
-                padding: const EdgeInsets.only(bottom: 30.0),
+              const Padding(
+                padding: EdgeInsets.only(bottom: 30.0),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  children: const [
+                  children: [
                     Icon(Icons.star_border, color: Colors.white, size: 32),
                     SizedBox(width: 20),
                     Icon(Icons.star, color: Color(0xFFFFD700), size: 32),

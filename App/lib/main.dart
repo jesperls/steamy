@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/message_screen.dart';
+import 'screens/chat_screen.dart';
 
 void main() {
   runApp(const MainApp());
@@ -22,10 +23,24 @@ class MainApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      initialRoute: '/', // Set the initial route to the home page
+      initialRoute: '/',
       routes: {
-        '/': (context) => WelcomeScreen(), // Main starting screen
-        '/messages': (context) => MessagePage(), // Navigation to MessagePage
+        '/': (context) => const WelcomeScreen(),
+        '/messages': (context) => const MessagePage(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/chat') {
+          final args = settings.arguments as Map<String, dynamic>?;
+          if (args != null) {
+            return MaterialPageRoute(
+              builder: (context) => ChatScreen(
+                matchedUserName: args['matchedUserName'],
+                matchedUserId: args['matchedUserId'],
+              ),
+            );
+          }
+        }
+        return null; // Fallback for invalid routes
       },
     );
   }
