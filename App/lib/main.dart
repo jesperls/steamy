@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'screens/welcome_screen.dart';
-import 'screens/message_screen.dart';
-import 'screens/chat_screen.dart';
-
+import 'screens/onboarding_screen.dart' as onboarding; // Alias for onboarding
+import 'screens/create_account_screen.dart' as create_account; // Alias for create_account
+import 'screens/create_account_screen_2.dart' as create_account2; // Alias for create_account2
 void main() {
   runApp(const MainApp());
 }
@@ -15,7 +15,7 @@ class MainApp extends StatelessWidget {
     return MaterialApp(
       title: 'Steamy',
       theme: ThemeData(
-        fontFamily: 'Roboto',
+        fontFamily: 'Poppins',
         colorScheme: ColorScheme.fromSeed(
           seedColor: const Color(0xFFe88656),
           primary: const Color(0xFFe88656),
@@ -23,24 +23,12 @@ class MainApp extends StatelessWidget {
         ),
         useMaterial3: true,
       ),
-      initialRoute: '/',
+      initialRoute: '/', // Default route
       routes: {
-        '/': (context) => const WelcomeScreen(),
-        '/messages': (context) => const MessagePage(),
-      },
-      onGenerateRoute: (settings) {
-        if (settings.name == '/chat') {
-          final args = settings.arguments as Map<String, dynamic>?;
-          if (args != null) {
-            return MaterialPageRoute(
-              builder: (context) => ChatScreen(
-                matchedUserName: args['matchedUserName'],
-                matchedUserId: args['matchedUserId'],
-              ),
-            );
-          }
-        }
-        return null; // Fallback for invalid routes
+        '/': (context) => const WelcomeScreen(), // Home screen
+        '/onboarding': (context) => const onboarding.OnboardingScreen(), // Onboarding screen
+        '/createAccount': (context) => const create_account.CreateAccountScreen(), // Create Account
+        '/createAccount2': (context) => const create_account2.CreateAccount2Screen(), // Create Account 2
       },
     );
   }

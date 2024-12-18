@@ -24,6 +24,9 @@ flutter:
     - family: Chewy
       fonts:
         - asset: assets/fonts/Chewy-Regular.ttf
+    - family: Poppins
+      fonts: # Fixed indentation here
+        - asset: assets/fonts/Poppins-Regular.ttf
 
   assets:
     - assets/images/heart1.png
@@ -32,5 +35,8 @@ flutter:
     - assets/images/heart4.png
     - assets/images/heart5.png
     - assets/images/heart6.png
+    - assets/images/hearts.png
     - assets/images/footer_sticker.png
+    - assets/images/pass_eye.png
+    - assets/images/ariana_grande.png
 

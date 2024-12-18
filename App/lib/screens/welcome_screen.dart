@@ -5,89 +5,99 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Fetch screen dimensions for responsive design
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
+    final screenHeight = MediaQuery
+        .of(context)
+        .size
+        .height;
+
+    // List of hearts with properties
+    final List<Map<String, dynamic>> hearts = [
+      {
+        'image': 'assets/images/heart1.png',
+        'top': 0.05,
+        'left': 0.05,
+        'width': 0.12,
+        'height': 0.06
+      },
+      {
+        'image': 'assets/images/heart5.png',
+        'top': 0.05,
+        'right': 0.05,
+        'width': 0.12,
+        'height': 0.06
+      },
+      {
+        'image': 'assets/images/heart3.png',
+        'top': 0.42,
+        'left': 0.1,
+        'width': 0.1,
+        'height': 0.05
+      },
+      {
+        'image': 'assets/images/heart4.png',
+        'top': 0.42,
+        'right': 0.1,
+        'width': 0.1,
+        'height': 0.05
+      },
+      {
+        'image': 'assets/images/heart5.png',
+        'bottom': 0.15,
+        'left': 0.05,
+        'width': 0.12,
+        'height': 0.06
+      },
+      {
+        'image': 'assets/images/heart6.png',
+        'bottom': 0.15,
+        'center': true,
+        'width': 0.15,
+        'height': 0.08
+      },
+    ];
 
     return Scaffold(
       body: Container(
-        width: screenWidth, // Full width of the screen
-        height: screenHeight, // Full height of the screen
+        width: screenWidth,
+        height: screenHeight,
         decoration: const BoxDecoration(
-          color: Color.fromARGB(255, 86, 55, 157), // Background color (purple)
+          color: Color.fromARGB(255, 86, 55, 157),
         ),
         child: Stack(
-          alignment: Alignment.center, // Aligns all children to the center
+          alignment: Alignment.center,
           children: [
-            // Top Left Heart
-            _buildHeart(
-              'assets/images/heart1.png',
-              screenWidth * 0.05, // Left position
-              screenHeight * 0.05, // Top position
-              screenWidth * 0.12, // Responsive width
-              screenHeight * 0.06, // Responsive height
-            ),
+            // Render all hearts dynamically
+            ...hearts.map((heart) =>
+                _buildHeart(
+                  heart['image'],
+                  screenWidth,
+                  screenHeight,
+                  heart['top'],
+                  heart['left'],
+                  heart['right'],
+                  heart['bottom'],
+                  heart['width'],
+                  heart['height'],
+                  isCenter: heart['center'] ?? false,
+                )),
 
-            // Top Right Heart
-            _buildHeart(
-              'assets/images/heart5.png',
-              screenWidth * 0.05,
-              screenHeight * 0.05,
-              screenWidth * 0.12,
-              screenHeight * 0.06,
-              isRight: true, // Align to the right side
-            ),
+            // Footer Sticker
+            _buildFooterSticker(
+                'assets/images/footer_sticker.png', screenWidth),
 
-            // Heart Left of "Perfect" text
-            _buildHeart(
-              'assets/images/heart3.png',
-              screenWidth * 0.1,
-              screenHeight * 0.42,
-              screenWidth * 0.1,
-              screenHeight * 0.05,
-            ),
-
-            // Heart Right of "PARTNER" text
-            _buildHeart(
-              'assets/images/heart4.png',
-              screenWidth * 0.1,
-              screenHeight * 0.42,
-              screenWidth * 0.1,
-              screenHeight * 0.05,
-              isRight: true,
-            ),
-
-            // Bottom Left Heart
-            _buildHeart(
-              'assets/images/heart5.png',
-              screenWidth * 0.05,
-              screenHeight * 0.15,
-              screenWidth * 0.12,
-              screenHeight * 0.06,
-            ),
-
-            // Bottom Center Heart
-            _buildHeart(
-              'assets/images/heart6.png',
-              0,
-              screenHeight * 0.15,
-              screenWidth * 0.15,
-              screenHeight * 0.08,
-              isCenter: true, // Center the heart horizontally
-            ),
-
-            // Footer stickers at the bottom of the screen
-            _buildFooterSticker('assets/images/footer_sticker.png', screenWidth),
-
-            // Centered Title, Tagline, and Button
+            // Main Title, Tagline, and Button
             Column(
-              mainAxisAlignment: MainAxisAlignment.center, // Vertically center
+              mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                _buildTitle(), // "Steamy" Title
-                const SizedBox(height: 20), // Spacing
-                _buildTagline(), // "Find Your Perfect PARTNER" text
-                const SizedBox(height: 40), // Spacing
-                _buildButton(screenWidth, screenHeight), // "Get Started" Button
+                _buildTitle(),
+                const SizedBox(height: 20),
+                _buildTagline(),
+                const SizedBox(height: 40),
+                _buildButton(context, screenWidth, screenHeight),
               ],
             ),
           ],
@@ -96,54 +106,57 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 
-  /// Helper method to build hearts with positioning options
-  Widget _buildHeart(
-    String asset,
-    double left,
-    double top,
-    double width,
-    double height, {
-    bool isRight = false, // Whether to position on the right side
-    bool isCenter = false, // Whether to center the heart
-  }) {
+  /// Helper method to build hearts dynamically
+  Widget _buildHeart(String asset,
+      double screenWidth,
+      double screenHeight,
+      double? top,
+      double? left,
+      double? right,
+      double? bottom,
+      double width,
+      double height, {
+        bool isCenter = false,
+      }) {
     return Positioned(
-      top: top,
-      left: isCenter ? null : (isRight ? null : left), // Align left or center
-      right: isRight ? left : null, // Align right if needed
+      top: top != null ? screenHeight * top : null,
+      left: isCenter ? null : (left != null ? screenWidth * left : null),
+      right: right != null ? screenWidth * right : null,
+      bottom: bottom != null ? screenHeight * bottom : null,
       child: Image.asset(
-        asset, // Path to the heart image
-        width: width, // Responsive width
-        height: height, // Responsive height
+        asset,
+        width: screenWidth * width,
+        height: screenHeight * height,
       ),
     );
   }
 
-  /// Helper method to build footer sticker image at the bottom
+  /// Footer Sticker at the bottom
   Widget _buildFooterSticker(String asset, double width) {
     return Positioned(
       bottom: 0,
       child: Image.asset(
-        asset, // Path to the footer image
-        width: width, // Full screen width
-        fit: BoxFit.cover, // Fit horizontally
+        asset,
+        width: width,
+        fit: BoxFit.cover,
       ),
     );
   }
 
-  /// Helper method to build the "Steamy" title text
+  /// "Steamy" title
   Widget _buildTitle() {
     return const Text(
       'Steamy',
       style: TextStyle(
-        fontFamily: 'CherryBombOne', // Custom font
-        fontSize: 95, // Font size
-        color: Colors.white, // White color
-        fontWeight: FontWeight.w400, // Normal weight
+        fontFamily: 'CherryBombOne',
+        fontSize: 95,
+        color: Colors.white,
+        fontWeight: FontWeight.w400,
       ),
     );
   }
 
-  /// Helper method to build the tagline "Find Your Perfect PARTNER"
+  /// Tagline "Find Your Perfect PARTNER"
   Widget _buildTagline() {
     return Column(
       children: [
@@ -155,7 +168,7 @@ class WelcomeScreen extends StatelessWidget {
             color: Colors.white,
           ),
         ),
-        const SizedBox(height: 10), // Spacing
+        const SizedBox(height: 10),
         RichText(
           text: const TextSpan(
             children: [
@@ -172,7 +185,7 @@ class WelcomeScreen extends StatelessWidget {
                 style: TextStyle(
                   fontFamily: 'Chewy',
                   fontSize: 32,
-                  color: Color(0xFFFFD700), // Yellow color
+                  color: Color(0xFFFFD700),
                   fontWeight: FontWeight.bold,
                 ),
               ),
@@ -183,35 +196,50 @@ class WelcomeScreen extends StatelessWidget {
     );
   }
 
-  /// Helper method to build the "Get Started" button
-  Widget _buildButton(double screenWidth, double screenHeight) {
-    return Container(
-      width: screenWidth * 0.5, // 50% of the screen width
-      height: screenHeight * 0.07, // Responsive height
-      decoration: BoxDecoration(
-        gradient: const LinearGradient(
-          colors: [
-            Color(0xFFE9E923), // Yellow
-            Color(0xFFCAA470), // Golden Brown
-            Color(0xFF972EF2), // Purple
-          ],
-          stops: [0.0, 0.37, 1.0], // Gradient stops
-          begin: Alignment.topLeft,
-          end: Alignment.bottomRight,
-        ),
-        borderRadius: BorderRadius.circular(30), // Rounded corners
-      ),
-      child: const Center(
-        child: Text(
-          'Get Started',
-          style: TextStyle(
-            fontFamily: 'Poppins', // Custom font for button text
-            fontSize: 16, // Font size
-            color: Colors.white, // Text color
-            fontWeight: FontWeight.bold, // Bold weight
+  /// "Get Started" button
+  Widget _buildButton(BuildContext context, double screenWidth,
+      double screenHeight) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final buttonWidth = constraints.maxWidth *
+            0.6; // 60% of available width
+        final buttonHeight = 50.0; // Fixed height for the button
+
+        return Center(
+          child: Container(
+            width: buttonWidth.clamp(200.0, 400.0),
+            // Clamping to keep it consistent
+            height: buttonHeight,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFFE9E923),
+                  Color(0xFFCAA470),
+                  Color(0xFF972EF2),
+                ],
+                stops: [0.0, 0.37, 1.0],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/onboarding'); // Route Navigation
+              },
+              child: const Text(
+                'Get Started',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
           ),
-        ),
-      ),
+        );
+      },
     );
   }
 }
