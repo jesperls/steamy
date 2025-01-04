@@ -196,7 +196,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           child: TextButton(
             onPressed: () {
-              Navigator.pushNamed(context, '/message-room');
+              Navigator.pushNamed(context, '/message-screen');
             },
             child: const Text(
               "Let's Steam !",

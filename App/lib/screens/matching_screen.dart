@@ -29,7 +29,7 @@ class _MatchPageState extends State<MatchPage> {
           'Accept': 'application/json',
         },
         body:
-        jsonEncode({"user_id": "1", "matched_id": "7", "matcher_id": "3"}),
+            jsonEncode({"user_id": "1", "matched_id": "7", "matcher_id": "3"}),
       );
 
       if (response.statusCode == 200) {
@@ -60,19 +60,19 @@ class _MatchPageState extends State<MatchPage> {
     const List<Map<String, String>> sampleData = [
       {
         'image':
-        'https://img.freepik.com/free-photo/portrait-happy-smiling-woman-standing-square-sunny-summer-spring-day-outside-cute-smiling-woman-looking-you-attractive-young-girl-enjoying-summer-filtered-image-flare-sunshine_231208-6734.jpg?semt=ais_hybrid',
+            'https://img.freepik.com/free-photo/portrait-happy-smiling-woman-standing-square-sunny-summer-spring-day-outside-cute-smiling-woman-looking-you-attractive-young-girl-enjoying-summer-filtered-image-flare-sunshine_231208-6734.jpg?semt=ais_hybrid',
         'username': '@AnnaLarsson',
         'fullName': 'Anna Larsson',
       },
       {
         'image':
-        'https://image.tensorartassets.com/cdn-cgi/image/w=600/posts/images/693605929739983953/5df558af-e772-4ee9-a5de-4a28df8bd48e.jpg',
+            'https://image.tensorartassets.com/cdn-cgi/image/w=600/posts/images/693605929739983953/5df558af-e772-4ee9-a5de-4a28df8bd48e.jpg',
         'username': '@JohnDoe',
         'fullName': 'John Doe',
       },
       {
         'image':
-        'https://plus.unsplash.com/premium_photo-1665663927708-e3287b105c44?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YW1lcmljYW4lMjBnaXJsfGVufDB8fDB8fHww',
+            'https://plus.unsplash.com/premium_photo-1665663927708-e3287b105c44?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YW1lcmljYW4lMjBnaXJsfGVufDB8fDB8fHww',
         'username': '@EmilySmith',
         'fullName': 'Emily Smith',
       },
@@ -87,7 +87,7 @@ class _MatchPageState extends State<MatchPage> {
             // Header Section with Navigation and Title
             Padding(
               padding:
-              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -105,7 +105,7 @@ class _MatchPageState extends State<MatchPage> {
                   Stack(
                     children: [
                       _buildIcon(CupertinoIcons.chat_bubble, () {
-                        Navigator.pushNamed(context, '/message-room');
+                        Navigator.pushNamed(context, '/message-screen');
                       }),
                       const Positioned(
                         top: 20,
@@ -121,7 +121,7 @@ class _MatchPageState extends State<MatchPage> {
             // "Near You" Section
             Padding(
               padding:
-              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -169,7 +169,7 @@ class _MatchPageState extends State<MatchPage> {
             // "Match" Button
             Padding(
               padding:
-              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
               child: _buildMatchButton(context),
             ),
           ],
@@ -206,12 +206,12 @@ class _MatchPageState extends State<MatchPage> {
 
   /// Builds the user card
   Widget _buildUserCard(
-      double screenWidth,
-      double screenHeight,
-      String imageUrl,
-      String username,
-      String fullName,
-      ) {
+    double screenWidth,
+    double screenHeight,
+    String imageUrl,
+    String username,
+    String fullName,
+  ) {
     return Center(
       child: Container(
         width: screenWidth * 0.85,
@@ -317,18 +317,17 @@ class _MatchPageState extends State<MatchPage> {
         ),
         child: isLoading
             ? const CircularProgressIndicator.adaptive(
-          backgroundColor: Colors.white,
-        )
+                backgroundColor: Colors.white,
+              )
             : const Text(
-          'Match',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
+                'Match',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
       ),
     );
   }
 }
-

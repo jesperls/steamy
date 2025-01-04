@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
-import 'screens/message_screen.dart' as message_room;
+import 'screens/message_screen.dart' as message_screen;
 import 'screens/create_account_screen.dart'
-as create_account; // Alias for create_account
+    as create_account; // Alias for create_account
 import 'screens/create_account_screen_2.dart'
-as create_account2; // Alias for create_account2
+    as create_account2; // Alias for create_account2
 import 'screens/matching_screen.dart'
-as matching_page; // Alias for matching_page
-import 'screens/message_screen.dart' as message_room;
+    as matching_page; // Alias for matching_page
 import 'screens/onboarding_screen.dart' as onboarding; // Alias for onboarding
 import 'screens/welcome_screen.dart';
 
@@ -35,14 +34,15 @@ class MainApp extends StatelessWidget {
       routes: {
         '/': (context) => const WelcomeScreen(), // Home screen
         '/onboarding': (context) =>
-        const onboarding.OnboardingScreen(), // Onboarding screen
+            const onboarding.OnboardingScreen(), // Onboarding screen
         '/createAccount': (context) =>
-        const create_account.CreateAccountScreen(), // Create Account
+            const create_account.CreateAccountScreen(), // Create Account
         '/createAccount2': (context) =>
-        const create_account2.CreateAccount2Screen(), // Create Account 2
+            const create_account2.CreateAccount2Screen(), // Create Account 2
         '/matching_page': (context) =>
-        const matching_page.MatchPage(), // Matching Page
-        '/message-room': (context) => const message_room.MessagePage(), //added
+            const matching_page.MatchPage(), // Matching Page
+        '/message-screen': (context) =>
+            const message_screen.MessagePage(), //added
       },
     );
   }
