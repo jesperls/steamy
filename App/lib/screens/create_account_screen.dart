@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -10,6 +12,14 @@ class CreateAccountScreen extends StatefulWidget {
 class _CreateAccountScreenState extends State<CreateAccountScreen> {
   bool isPasswordVisible = false;
   bool isRePasswordVisible = false;
+
+  // Text Controllers for capturing input
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
+  TextEditingController rePasswordController = TextEditingController();
+
+  // API Endpoint
+  final String registerEndpoint = "http://127.0.0.1:8000/register"; // Replace with actual IP if needed
 
   @override
   Widget build(BuildContext context) {
@@ -32,19 +42,19 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
               // Title
               _buildTitle(),
               const SizedBox(height: 30),
 
               // Email Field
               _buildLabel('Email'),
-              _buildTextField('Enter your email', false),
+              _buildTextField('Enter your email', emailController, false),
               const SizedBox(height: 20),
 
               // Password Field
               _buildLabel('Password'),
               _buildPasswordField(
+                controller: passwordController,
                 isVisible: isPasswordVisible,
                 onVisibilityToggle: () {
                   setState(() {
@@ -57,6 +67,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               // Re-Enter Password Field
               _buildLabel('Re-Enter Password'),
               _buildPasswordField(
+                controller: rePasswordController,
                 isVisible: isRePasswordVisible,
                 onVisibilityToggle: () {
                   setState(() {
@@ -74,7 +85,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       ),
     );
   }
-
 
   /// Builds the Title Section
   Widget _buildTitle() {
@@ -104,8 +114,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   }
 
   /// Builds a TextField for Input
-  Widget _buildTextField(String hintText, bool isPassword) {
+  Widget _buildTextField(String hintText, TextEditingController controller, bool isPassword) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       style: const TextStyle(
         fontFamily: 'Poppins',
@@ -130,10 +141,12 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
 
   /// Builds a Password Field with Visibility Toggle
   Widget _buildPasswordField({
+    required TextEditingController controller,
     required bool isVisible,
     required VoidCallback onVisibilityToggle,
   }) {
     return TextField(
+      controller: controller,
       obscureText: !isVisible,
       style: const TextStyle(
         fontFamily: 'Poppins',
@@ -154,11 +167,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
         ),
         suffixIcon: GestureDetector(
           onTap: onVisibilityToggle,
-          child: Image.asset(
-            'assets/images/pass_eye.png',
+          child: Icon(
+            isVisible ? Icons.visibility : Icons.visibility_off,
             color: Colors.white54,
-            width: 20,
-            height: 20,
           ),
         ),
       ),
@@ -189,9 +200,59 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
               borderRadius: BorderRadius.circular(30),
             ),
             child: TextButton(
-              onPressed: () {
-                Navigator.pushNamed(context, '/createAccount2');
+              onPressed: () async {
+                print('Continue button pressed');
+
+                if (passwordController.text != rePasswordController.text) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Passwords do not match')),
+                  );
+                  return;
+                }
+
+                try {
+                  print('Sending request to $registerEndpoint');
+                  final response = await http.post(
+                    Uri.parse(registerEndpoint),
+                    headers: <String, String>{'Content-Type': 'application/json'},
+                    body: jsonEncode(<String, String>{
+                      'email': emailController.text,
+                      'password': passwordController.text,
+                      'display_name': 'User',
+                    }),
+                  );
+
+                  print('Response status: ${response.statusCode}');
+                  print('Response body: ${response.body}');
+
+                  if (response.statusCode == 200) {
+                    final responseBody = jsonDecode(response.body);
+
+                    if (responseBody['id'] != null) {
+                      Navigator.pushNamed(
+                        context,
+                        '/createAccount2',
+                        arguments: {'userId': responseBody['id'].toString()},
+                      );
+                    } else {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(content: Text('Error: User ID not found in response')),
+                      );
+                    }
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text('Error: ${response.body}')),
+                    );
+                  }
+                } catch (e) {
+                  print('Error occurred: $e');
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Error connecting to server')),
+                  );
+                }
               },
+
+
               child: const Text(
                 'Continue ->',
                 style: TextStyle(

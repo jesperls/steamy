@@ -34,7 +34,7 @@ class _MessagePageState extends State<MessagePage> {
 
     try {
       final response =
-          await http.get(Uri.parse('http://localhost:8000/getNextMatch'));
+      await http.get(Uri.parse('http://localhost:8000/getNextMatch'));
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -43,7 +43,7 @@ class _MessagePageState extends State<MessagePage> {
           setState(() {
             matches = List<Map<String, String>>.from(
               data.map(
-                (item) => {
+                    (item) => {
                   "name": item["name"] ?? "Unknown",
                   "image": item["image"] ?? "https://via.placeholder.com/150",
                   "id": item["id"] ?? "0",
@@ -106,134 +106,134 @@ class _MessagePageState extends State<MessagePage> {
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: isLoading
               ? const Center(
-                  child: CircularProgressIndicator(),
-                )
+            child: CircularProgressIndicator(),
+          )
               : Column(
+            children: [
+              // Header Section
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Header Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 15.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit,
-                                color: Colors.blue, size: 28),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/create_account');
-                            },
-                          ),
-                          const Text(
-                            'Message',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.explore,
-                                color: Colors.blue, size: 28),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/matching_page');
-                            },
-                          ),
-                        ],
+                    IconButton(
+                      icon: const Icon(Icons.edit,
+                          color: Colors.blue, size: 28),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/create_account');
+                      },
+                    ),
+                    const Text(
+                      'Message',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 10),
-
-                    // Search Bar
-                    TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.search),
-                        hintText: 'Search Matches',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 15),
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.explore,
+                          color: Colors.blue, size: 28),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/matching_page');
+                      },
                     ),
-                    const SizedBox(height: 10),
-
-                    // Horizontally scrollable new matches
-                    newMatches.isNotEmpty
-                        ? SizedBox(
-                            height: 100,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: newMatches.length,
-                              itemBuilder: (context, index) {
-                                final match = newMatches[index];
-                                return GestureDetector(
-                                  onTap: () => _navigateToChatScreen(match),
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 5),
-                                    child: Column(
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundImage:
-                                              NetworkImage(match['image']!),
-                                          radius: 30,
-                                        ),
-                                        const SizedBox(height: 5),
-                                        SizedBox(
-                                          width: 60,
-                                          child: Text(
-                                            match['name']!,
-                                            overflow: TextOverflow.ellipsis,
-                                            textAlign: TextAlign.center,
-                                            style:
-                                                const TextStyle(fontSize: 12),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          )
-                        : const SizedBox(),
-
-                    const SizedBox(height: 10),
-
-                    // Main list or empty state
-                    filteredMatches.isEmpty
-                        ? const Expanded(
-                            child: Center(
-                              child: Text(
-                                'No matches found.',
-                                style:
-                                    TextStyle(fontSize: 16, color: Colors.grey),
-                              ),
-                            ),
-                          )
-                        : Expanded(
-                            child: ListView.builder(
-                              itemCount: filteredMatches.length,
-                              itemBuilder: (context, index) {
-                                final match = filteredMatches[index];
-                                return ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundImage:
-                                        NetworkImage(match['image']!),
-                                  ),
-                                  title: Text(match['name']!),
-                                  trailing: const Icon(Icons.message,
-                                      color: Colors.green),
-                                  onTap: () => _navigateToChatScreen(match),
-                                );
-                              },
-                            ),
-                          ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 10),
+
+              // Search Bar
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: 'Search Matches',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  contentPadding: const EdgeInsets.symmetric(
+                      vertical: 10, horizontal: 15),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Horizontally scrollable new matches
+              newMatches.isNotEmpty
+                  ? SizedBox(
+                height: 100,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: newMatches.length,
+                  itemBuilder: (context, index) {
+                    final match = newMatches[index];
+                    return GestureDetector(
+                      onTap: () => _navigateToChatScreen(match),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 5),
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              backgroundImage:
+                              NetworkImage(match['image']!),
+                              radius: 30,
+                            ),
+                            const SizedBox(height: 5),
+                            SizedBox(
+                              width: 60,
+                              child: Text(
+                                match['name']!,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style:
+                                const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
+                  : const SizedBox(),
+
+              const SizedBox(height: 10),
+
+              // Main list or empty state
+              filteredMatches.isEmpty
+                  ? const Expanded(
+                child: Center(
+                  child: Text(
+                    'No matches found.',
+                    style:
+                    TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ),
+              )
+                  : Expanded(
+                child: ListView.builder(
+                  itemCount: filteredMatches.length,
+                  itemBuilder: (context, index) {
+                    final match = filteredMatches[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage:
+                        NetworkImage(match['image']!),
+                      ),
+                      title: Text(match['name']!),
+                      trailing: const Icon(Icons.message,
+                          color: Colors.green),
+                      onTap: () => _navigateToChatScreen(match),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

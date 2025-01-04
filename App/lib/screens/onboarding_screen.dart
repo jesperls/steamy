@@ -1,4 +1,8 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'package:steamy/screens/message_screen.dart';
+
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -8,7 +12,17 @@ class OnboardingScreen extends StatefulWidget {
 }
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
   bool isPasswordVisible = false; // Controls password visibility
+  final String loginEndpoint = "http://127.0.0.1:8000/login";
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -28,7 +42,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Hearts Image at the top
               Center(
                 child: Image.asset(
                   'assets/images/hearts.png',
@@ -38,13 +51,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 ),
               ),
               const SizedBox(height: 20),
-
-              // Welcome Back Text
-              _buildText('Welcome Back!', 35, const Color(0xFFE9E923),
-                  FontWeight.bold, TextAlign.center),
+              _buildText(
+                'Welcome Back!',
+                35,
+                const Color(0xFFE9E923),
+                FontWeight.bold,
+                TextAlign.center,
+              ),
               const SizedBox(height: 10),
-
-              // Subtext
               _buildText(
                 'Hi, Kindly login to start your love journey',
                 12.5,
@@ -53,25 +67,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 TextAlign.center,
               ),
               const SizedBox(height: 30),
-
-              // Email Field
               _buildLabel('Email'),
-              _buildTextField('Enter your email', false),
-
-              // Password Field
+              _buildTextField('Enter your email', emailController, false),
               const SizedBox(height: 20),
               _buildLabel('Password'),
               _buildPasswordField(),
-
-              // Forgot Password
               const SizedBox(height: 10),
               _buildForgotPasswordLink(),
-
-              // Let's Steam Button
               const SizedBox(height: 30),
               _buildSteamButton(),
-
-              // Create Account Link
               const SizedBox(height: 20),
               _buildCreateAccountLink(),
             ],
@@ -81,7 +85,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  /// Helper Method: Builds the Label Text
   Widget _buildLabel(String label) {
     return Text(
       label,
@@ -93,9 +96,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  /// Helper Method: Builds a Regular TextField
-  Widget _buildTextField(String hintText, bool isPassword) {
+  Widget _buildTextField(
+      String hintText, TextEditingController controller, bool isPassword) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       style: const TextStyle(
         fontFamily: 'Poppins',
@@ -118,9 +122,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  /// Helper Method: Builds a Password Field with Toggle
   Widget _buildPasswordField() {
     return TextField(
+      controller: passwordController,
       obscureText: !isPasswordVisible,
       style: const TextStyle(
         fontFamily: 'Poppins',
@@ -145,18 +149,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               isPasswordVisible = !isPasswordVisible;
             });
           },
-          child: Image.asset(
-            'assets/images/pass_eye.png',
+          child: Icon(
+            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
             color: Colors.white54,
-            width: 20,
-            height: 20,
           ),
         ),
       ),
     );
   }
 
-  /// Forgot Password Link
   Widget _buildForgotPasswordLink() {
     return Align(
       alignment: Alignment.centerRight,
@@ -175,7 +176,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  /// "Let's Steam!" Button
   Widget _buildSteamButton() {
     return Center(
       child: SizedBox(
@@ -195,11 +195,64 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             borderRadius: BorderRadius.circular(30),
           ),
           child: TextButton(
-            onPressed: () {
-              Navigator.pushNamed(context,'/' );
+            onPressed: () async {
+              final String email = emailController.text.trim();
+              final String password = passwordController.text.trim();
+
+              if (email.isEmpty || password.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter both email and password.')),
+                );
+                return;
+              }
+
+              try {
+                // Show loading indicator
+                showDialog(
+                  context: context,
+                  barrierDismissible: false,
+                  builder: (BuildContext context) {
+                    return const Center(child: CircularProgressIndicator());
+                  },
+                );
+
+                // Send login request
+                final response = await http.post(
+                  Uri.parse(loginEndpoint),
+                  headers: <String, String>{'Content-Type': 'application/json'},
+                  body: jsonEncode(<String, String>{
+                    'email': email,
+                    'password': password,
+                  }),
+                );
+
+                Navigator.pop(context); // Close loading indicator
+
+                if (response.statusCode == 200) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Login Successful!')),
+                  );
+
+                  // Navigate to MessagePage
+                  Navigator.pushReplacement(
+                    context,
+                    MaterialPageRoute(builder: (context) => const MessagePage()),
+                  );
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Login failed: ${response.body}')),
+                  );
+                }
+              } catch (e) {
+                Navigator.pop(context); // Close loading indicator
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Error connecting to server.')),
+                );
+              }
             },
+
             child: const Text(
-              "Let's Steam !",
+              "Let's Steam!",
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 15,
@@ -213,7 +266,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  /// Helper Method: Builds Text Widgets
   Widget _buildText(String text, double fontSize, Color color,
       FontWeight fontWeight, TextAlign align) {
     return Center(
@@ -230,7 +282,6 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  /// Helper Method: Builds the "Create Account" Section
   Widget _buildCreateAccountLink() {
     return Center(
       child: Column(

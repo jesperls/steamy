@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'screens/welcome_screen.dart';
-import 'screens/onboarding_screen.dart' as onboarding; // Alias for onboarding
-import 'screens/create_account_screen.dart' as create_account; // Alias for create_account
-import 'screens/create_account_screen_2.dart' as create_account2; // Alias for create_account2
+import 'screens/onboarding_screen.dart';
+import 'screens/create_account_screen.dart';
+import 'screens/create_account_screen_2.dart';
+
 void main() {
   runApp(const MainApp());
 }
@@ -25,10 +26,26 @@ class MainApp extends StatelessWidget {
       ),
       initialRoute: '/', // Default route
       routes: {
-        '/': (context) => const WelcomeScreen(), // Home screen
-        '/onboarding': (context) => const onboarding.OnboardingScreen(), // Onboarding screen
-        '/createAccount': (context) => const create_account.CreateAccountScreen(), // Create Account
-        '/createAccount2': (context) => const create_account2.CreateAccount2Screen(), // Create Account 2
+        '/': (context) => const WelcomeScreen(),
+        '/onboarding': (context) => const OnboardingScreen(),
+        '/createAccount': (context) => const CreateAccountScreen(),
+      },
+      onGenerateRoute: (settings) {
+        if (settings.name == '/createAccount2') {
+          final args = settings.arguments as Map<String, dynamic>;
+          if (args.containsKey('userId')) {
+            return MaterialPageRoute(
+              builder: (context) => CreateAccount2Screen(userId: args['userId']),
+            );
+          } else {
+            return MaterialPageRoute(
+              builder: (context) => const Scaffold(
+                body: Center(child: Text('Error: Missing userId')),
+              ),
+            );
+          }
+        }
+        return null;
       },
     );
   }

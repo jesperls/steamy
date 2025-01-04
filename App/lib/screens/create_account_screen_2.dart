@@ -1,12 +1,34 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
-class CreateAccount2Screen extends StatelessWidget {
-  const CreateAccount2Screen({super.key});
+class CreateAccount2Screen extends StatefulWidget {
+  final String userId;
+  const CreateAccount2Screen({super.key, required this.userId});
+
+  @override
+  State<CreateAccount2Screen> createState() => _CreateAccount2ScreenState();
+}
+
+class _CreateAccount2ScreenState extends State<CreateAccount2Screen> {
+  final TextEditingController nameController = TextEditingController();
+  String? selectedInterest;
+  String? selectedPreference;
+
+  final String updateProfileEndpoint = "http://127.0.0.1:8000/updateProfile";
+
+  final List<String> interests = ["Music", "Movies", "Sports", "Reading"];
+  final List<String> preferences = ["Friendship", "Dating", "Networking"];
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 86, 55, 157),
@@ -24,30 +46,25 @@ class CreateAccount2Screen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Profile Picture
               _buildProfilePicture(screenWidth),
-
               const SizedBox(height: 20),
-
-              // Name Input
               _buildLabel('Name'),
-              _buildTextField('Enter your name'),
-
+              _buildTextField('Enter your name', nameController),
               const SizedBox(height: 20),
-
-              // Interests Dropdown
               _buildLabel('Interests'),
-              _buildDropdown(['Music', 'Movies', 'Sports', 'Reading']),
-
+              _buildDropdown(interests, selectedInterest, (value) {
+                setState(() {
+                  selectedInterest = value;
+                });
+              }),
               const SizedBox(height: 20),
-
-              // Looking For Dropdown
               _buildLabel("I'm looking for:"),
-              _buildDropdown(['Friendship', 'Dating', 'Networking']),
-
+              _buildDropdown(preferences, selectedPreference, (value) {
+                setState(() {
+                  selectedPreference = value;
+                });
+              }),
               const SizedBox(height: 40),
-
-              // Join Button
               _buildJoinButton(context),
             ],
           ),
@@ -56,7 +73,6 @@ class CreateAccount2Screen extends StatelessWidget {
     );
   }
 
-  /// Profile Picture Widget
   Widget _buildProfilePicture(double screenWidth) {
     return Center(
       child: Container(
@@ -74,7 +90,6 @@ class CreateAccount2Screen extends StatelessWidget {
     );
   }
 
-  /// Label Widget
   Widget _buildLabel(String text) {
     return Text(
       text,
@@ -86,9 +101,9 @@ class CreateAccount2Screen extends StatelessWidget {
     );
   }
 
-  /// TextField Widget
-  Widget _buildTextField(String hintText) {
+  Widget _buildTextField(String hintText, TextEditingController controller) {
     return TextField(
+      controller: controller,
       style: const TextStyle(
         fontFamily: 'Poppins',
         fontSize: 15,
@@ -110,10 +125,7 @@ class CreateAccount2Screen extends StatelessWidget {
     );
   }
 
-  /// Dropdown Widget
-  Widget _buildDropdown(List<String> items) {
-    String? selectedValue;
-
+  Widget _buildDropdown(List<String> items, String? selectedValue, void Function(String?) onChanged) {
     return DropdownButtonFormField<String>(
       value: selectedValue,
       dropdownColor: const Color.fromARGB(255, 86, 55, 157),
@@ -134,13 +146,10 @@ class CreateAccount2Screen extends StatelessWidget {
           child: Text(item),
         );
       }).toList(),
-      onChanged: (value) {
-        selectedValue = value;
-      },
+      onChanged: onChanged,
     );
   }
 
-  /// Join Button
   Widget _buildJoinButton(BuildContext context) {
     return Center(
       child: Container(
@@ -160,9 +169,69 @@ class CreateAccount2Screen extends StatelessWidget {
           borderRadius: BorderRadius.circular(30),
         ),
         child: TextButton(
-          onPressed: () {
-            // Add navigation logic here
-            Navigator.popUntil(context, ModalRoute.withName('/'));
+          onPressed: () async {
+            // Ensure interest and preference are selected and name is not empty
+            if (selectedInterest == null || selectedPreference == null || nameController.text.trim().isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please fill in all fields before proceeding.')),
+              );
+              return;
+            }
+
+            // Prepare payload
+            final payload = {
+              'id': widget.userId,
+              'display_name': nameController.text.trim(),
+              'preferences': selectedPreference,
+              'bio': selectedInterest,
+            };
+
+            // Print payload for debugging
+            print("Payload to be sent: $payload");
+
+            // Show loading indicator
+            showDialog(
+              context: context,
+              barrierDismissible: false,
+              builder: (BuildContext context) {
+                return const Center(child: CircularProgressIndicator());
+              },
+            );
+
+            try {
+              // Send update profile request
+              final response = await http.put(
+                Uri.parse(updateProfileEndpoint),
+                headers: <String, String>{'Content-Type': 'application/json'},
+                body: jsonEncode(payload),
+              );
+
+              Navigator.pop(context); // Close loading indicator
+
+              // Print response for debugging
+              print("Response status: ${response.statusCode}");
+              print("Response body: ${response.body}");
+
+              if (response.statusCode == 200) {
+                // Success
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Profile Updated Successfully!')),
+                );
+                Navigator.pushNamed(context, '/matchingScreen');
+              } else {
+                // Backend returned an error
+                ScaffoldMessenger.of(context).showSnackBar(
+                  SnackBar(content: Text('Error: ${response.body}')),
+                );
+              }
+            } catch (e) {
+              Navigator.pop(context); // Close loading indicator
+              // Log error for debugging
+              print("Error occurred: $e");
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Error connecting to server')),
+              );
+            }
           },
           child: const Text(
             'Join Steamy',

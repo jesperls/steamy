@@ -11,6 +11,7 @@ dependencies:
         sdk: flutter
     http: ^1.2.2
 
+
 dev_dependencies:
     flutter_test:
         sdk: flutter
@@ -18,9 +19,6 @@ dev_dependencies:
 
 flutter:
   fonts:
-    - family: CherryBombOne
-      fonts:
-        - asset: assets/fonts/CherryBombOne-Regular.ttf
     - family: Chewy
       fonts:
         - asset: assets/fonts/Chewy-Regular.ttf
