@@ -163,6 +163,7 @@ class CreateAccount2Screen extends StatelessWidget {
           onPressed: () {
             // Add navigation logic here
             Navigator.popUntil(context, ModalRoute.withName('/'));
+            //add path to matching page
           },
           child: const Text(
             'Join Steamy',
@@ -171,6 +172,7 @@ class CreateAccount2Screen extends StatelessWidget {
               fontSize: 16,
               color: Colors.white,
               fontWeight: FontWeight.bold,
+
             ),
           ),
         ),

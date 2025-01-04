@@ -5,14 +5,8 @@ class WelcomeScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery
-        .of(context)
-        .size
-        .width;
-    final screenHeight = MediaQuery
-        .of(context)
-        .size
-        .height;
+    final screenWidth = MediaQuery.of(context).size.width;
+    final screenHeight = MediaQuery.of(context).size.height;
 
     // List of hearts with properties
     final List<Map<String, dynamic>> hearts = [
@@ -71,25 +65,23 @@ class WelcomeScreen extends StatelessWidget {
           alignment: Alignment.center,
           children: [
             // Render all hearts dynamically
-            ...hearts.map((heart) =>
-                _buildHeart(
-                  heart['image'],
-                  screenWidth,
-                  screenHeight,
-                  heart['top'],
-                  heart['left'],
-                  heart['right'],
-                  heart['bottom'],
-                  heart['width'],
-                  heart['height'],
-                  isCenter: heart['center'] ?? false,
-                )),
+            ...hearts.map((heart) => _buildHeart(
+              heart['image'],
+              screenWidth,
+              screenHeight,
+              heart['top'],
+              heart['left'],
+              heart['right'],
+              heart['bottom'],
+              heart['width'],
+              heart['height'],
+              isCenter: heart['center'] ?? false,
+            )),
 
             // Footer Sticker
-            _buildFooterSticker(
-                'assets/images/footer_sticker.png', screenWidth),
+            _buildFooterSticker('assets/images/footer_sticker.png', screenWidth),
 
-            // Main Title, Tagline, and Button
+            // Main Title, Tagline, and Buttons
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
@@ -97,7 +89,9 @@ class WelcomeScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 _buildTagline(),
                 const SizedBox(height: 40),
-                _buildButton(context, screenWidth, screenHeight),
+                _buildButton(context, screenWidth, screenHeight), // "Get Started" button
+//                const SizedBox(height: 20), // Space between the buttons
+//                _buildMatchingPageButton(context, screenWidth, screenHeight), // "Go to Matching Page" button
               ],
             ),
           ],
@@ -107,7 +101,8 @@ class WelcomeScreen extends StatelessWidget {
   }
 
   /// Helper method to build hearts dynamically
-  Widget _buildHeart(String asset,
+  Widget _buildHeart(
+      String asset,
       double screenWidth,
       double screenHeight,
       double? top,
@@ -197,18 +192,15 @@ class WelcomeScreen extends StatelessWidget {
   }
 
   /// "Get Started" button
-  Widget _buildButton(BuildContext context, double screenWidth,
-      double screenHeight) {
+  Widget _buildButton(BuildContext context, double screenWidth, double screenHeight) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final buttonWidth = constraints.maxWidth *
-            0.6; // 60% of available width
-        final buttonHeight = 50.0; // Fixed height for the button
+        final buttonWidth = constraints.maxWidth * 0.6;
+        final buttonHeight = 50.0;
 
         return Center(
           child: Container(
             width: buttonWidth.clamp(200.0, 400.0),
-            // Clamping to keep it consistent
             height: buttonHeight,
             decoration: BoxDecoration(
               gradient: const LinearGradient(
@@ -225,10 +217,53 @@ class WelcomeScreen extends StatelessWidget {
             ),
             child: TextButton(
               onPressed: () {
-                Navigator.pushNamed(context, '/onboarding'); // Route Navigation
+                Navigator.pushNamed(context, '/onboarding');
               },
               child: const Text(
                 'Get Started',
+                style: TextStyle(
+                  fontFamily: 'Poppins',
+                  fontSize: 16,
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  /// "Go to Matching Page" button
+  Widget _buildMatchingPageButton(BuildContext context, double screenWidth, double screenHeight) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final buttonWidth = constraints.maxWidth * 0.6;
+        final buttonHeight = 50.0;
+
+        return Center(
+          child: Container(
+            width: buttonWidth.clamp(200.0, 400.0),
+            height: buttonHeight,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [
+                  Color(0xFF56CCF2),
+                  Color(0xFF2F80ED),
+                ],
+                stops: [0.0, 1.0],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(30),
+            ),
+            child: TextButton(
+              onPressed: () {
+                Navigator.pushNamed(context, '/matching_page');
+              },
+              child: const Text(
+                'Go to Matching Page',
                 style: TextStyle(
                   fontFamily: 'Poppins',
                   fontSize: 16,

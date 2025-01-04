@@ -1,6 +1,9 @@
+import 'dart:convert';
+import 'dart:developer';
+
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
-import 'dart:convert';
+
 import 'chat_screen.dart';
 
 class MessagePage extends StatefulWidget {
@@ -11,13 +14,13 @@ class MessagePage extends StatefulWidget {
 }
 
 class _MessagePageState extends State<MessagePage> {
-  List<Map<String, String>> matches = [];
-  List<Map<String, String>> newMatches = [];
+  List<Map<String, dynamic>> matches = [];
+  List<Map<String, dynamic>> newMatches = [];
   bool isLoading = true;
   bool hasFetched = false;
 
   final TextEditingController _searchController = TextEditingController();
-  List<Map<String, String>> filteredMatches = [];
+  List<Map<String, dynamic>> filteredMatches = [];
 
   @override
   void initState() {
@@ -33,23 +36,39 @@ class _MessagePageState extends State<MessagePage> {
     });
 
     try {
-      final response =
-          await http.get(Uri.parse('http://localhost:8000/getNextMatch'));
+      final response = await http.post(
+        Uri.parse('http://10.0.2.2:8000/getMatches'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({
+          'user_id': "1",
+        }),
+      );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
 
         if (data is List && data.isNotEmpty) {
           setState(() {
-            matches = List<Map<String, String>>.from(
+            matches = List<Map<String, dynamic>>.from(
               data.map(
-                (item) => {
-                  "name": item["name"] ?? "Unknown",
-                  "image": item["image"] ?? "https://via.placeholder.com/150",
-                  "id": item["id"] ?? "0",
+                    (item) => {
+                  "id": item["id"].toString(),
+                  "user_id_1": item["user_id_1"].toString(),
+                  "user_id_2": item["user_id_2"].toString(),
+                  "match_score": item["match_score"].toString(),
+                  "is_matched": item["is_matched"]?.toString() ?? "false",
+                  "created_at": item["created_at"] ?? "N/A",
+                  "updated_at": item["updated_at"] ?? "N/A",
+                  "name": "Emily",
+                  "image":
+                  "https://img.freepik.com/free-photo/portrait-happy-smiling-woman-standing-square-sunny-summer-spring-day-outside-cute-smiling-woman-looking-you-attractive-young-girl-enjoying-summer-filtered-image-flare-sunshine_231208-6734.jpg?semt=ais_hybrid",
                 },
               ),
             );
+
             newMatches = matches.take(5).toList();
           });
         } else {
@@ -65,6 +84,7 @@ class _MessagePageState extends State<MessagePage> {
         throw Exception("Failed to load data.");
       }
     } catch (error) {
+      log(error.toString());
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading matches: $error')),
       );
@@ -85,7 +105,7 @@ class _MessagePageState extends State<MessagePage> {
     });
   }
 
-  void _navigateToChatScreen(Map<String, String> user) {
+  void _navigateToChatScreen(Map<String, dynamic> user) {
     Navigator.push(
       context,
       MaterialPageRoute(
@@ -106,134 +126,134 @@ class _MessagePageState extends State<MessagePage> {
           padding: const EdgeInsets.symmetric(horizontal: 12.0),
           child: isLoading
               ? const Center(
-                  child: CircularProgressIndicator(),
-                )
+            child: CircularProgressIndicator(),
+          )
               : Column(
+            children: [
+              // Header Section
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 15.0),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    // Header Section
-                    Padding(
-                      padding: const EdgeInsets.symmetric(vertical: 15.0),
-                      child: Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          IconButton(
-                            icon: const Icon(Icons.edit,
-                                color: Colors.blue, size: 28),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/create_account');
-                            },
-                          ),
-                          const Text(
-                            'Message',
-                            style: TextStyle(
-                              fontFamily: 'Poppins',
-                              fontSize: 22,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          IconButton(
-                            icon: const Icon(Icons.explore,
-                                color: Colors.blue, size: 28),
-                            onPressed: () {
-                              Navigator.pushNamed(context, '/matching_page');
-                            },
-                          ),
-                        ],
+                    IconButton(
+                      icon: const Icon(Icons.edit,
+                          color: Colors.blue, size: 28),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/matching_page');
+                      },
+                    ),
+                    const Text(
+                      'Message',
+                      style: TextStyle(
+                        fontFamily: 'Poppins',
+                        fontSize: 22,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                    const SizedBox(height: 10),
-
-                    // Search Bar
-                    TextField(
-                      controller: _searchController,
-                      decoration: InputDecoration(
-                        prefixIcon: const Icon(Icons.search),
-                        hintText: 'Search Matches',
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey[200],
-                        contentPadding: const EdgeInsets.symmetric(
-                            vertical: 10, horizontal: 15),
-                      ),
+                    IconButton(
+                      icon: const Icon(Icons.explore,
+                          color: Colors.blue, size: 28),
+                      onPressed: () {
+                        Navigator.pushNamed(context, '/matching_page');
+                      },
                     ),
-                    const SizedBox(height: 10),
-
-                    // Horizontally scrollable new matches
-                    newMatches.isNotEmpty
-                        ? SizedBox(
-                            height: 100,
-                            child: ListView.builder(
-                              scrollDirection: Axis.horizontal,
-                              itemCount: newMatches.length,
-                              itemBuilder: (context, index) {
-                                final match = newMatches[index];
-                                return GestureDetector(
-                                  onTap: () => _navigateToChatScreen(match),
-                                  child: Container(
-                                    margin: const EdgeInsets.symmetric(
-                                        horizontal: 5),
-                                    child: Column(
-                                      children: [
-                                        CircleAvatar(
-                                          backgroundImage:
-                                              NetworkImage(match['image']!),
-                                          radius: 30,
-                                        ),
-                                        const SizedBox(height: 5),
-                                        SizedBox(
-                                          width: 60,
-                                          child: Text(
-                                            match['name']!,
-                                            overflow: TextOverflow.ellipsis,
-                                            textAlign: TextAlign.center,
-                                            style:
-                                                const TextStyle(fontSize: 12),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                );
-                              },
-                            ),
-                          )
-                        : const SizedBox(),
-
-                    const SizedBox(height: 10),
-
-                    // Main list or empty state
-                    filteredMatches.isEmpty
-                        ? const Expanded(
-                            child: Center(
-                              child: Text(
-                                'No matches found.',
-                                style:
-                                    TextStyle(fontSize: 16, color: Colors.grey),
-                              ),
-                            ),
-                          )
-                        : Expanded(
-                            child: ListView.builder(
-                              itemCount: filteredMatches.length,
-                              itemBuilder: (context, index) {
-                                final match = filteredMatches[index];
-                                return ListTile(
-                                  leading: CircleAvatar(
-                                    backgroundImage:
-                                        NetworkImage(match['image']!),
-                                  ),
-                                  title: Text(match['name']!),
-                                  trailing: const Icon(Icons.message,
-                                      color: Colors.green),
-                                  onTap: () => _navigateToChatScreen(match),
-                                );
-                              },
-                            ),
-                          ),
                   ],
                 ),
+              ),
+              const SizedBox(height: 10),
+
+              // Search Bar
+              TextField(
+                controller: _searchController,
+                decoration: InputDecoration(
+                  prefixIcon: const Icon(Icons.search),
+                  hintText: 'Search Matches',
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey[200],
+                  contentPadding: const EdgeInsets.symmetric(
+                      vertical: 10, horizontal: 15),
+                ),
+              ),
+              const SizedBox(height: 10),
+
+              // Horizontally scrollable new matches
+              newMatches.isNotEmpty
+                  ? SizedBox(
+                height: 100,
+                child: ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  itemCount: newMatches.length,
+                  itemBuilder: (context, index) {
+                    final match = newMatches[index];
+                    return GestureDetector(
+                      onTap: () => _navigateToChatScreen(match),
+                      child: Container(
+                        margin: const EdgeInsets.symmetric(
+                            horizontal: 5),
+                        child: Column(
+                          children: [
+                            CircleAvatar(
+                              backgroundImage:
+                              NetworkImage(match['image']!),
+                              radius: 30,
+                            ),
+                            const SizedBox(height: 5),
+                            SizedBox(
+                              width: 60,
+                              child: Text(
+                                match['name']!,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
+                                style:
+                                const TextStyle(fontSize: 12),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              )
+                  : const SizedBox(),
+
+              const SizedBox(height: 10),
+
+              // Main list or empty state
+              filteredMatches.isEmpty
+                  ? const Expanded(
+                child: Center(
+                  child: Text(
+                    'No matches found.',
+                    style:
+                    TextStyle(fontSize: 16, color: Colors.grey),
+                  ),
+                ),
+              )
+                  : Expanded(
+                child: ListView.builder(
+                  itemCount: filteredMatches.length,
+                  itemBuilder: (context, index) {
+                    final match = filteredMatches[index];
+                    return ListTile(
+                      leading: CircleAvatar(
+                        backgroundImage:
+                        NetworkImage(match['image']!),
+                      ),
+                      title: Text(match['name']!),
+                      trailing: const Icon(Icons.message,
+                          color: Colors.green),
+                      onTap: () => _navigateToChatScreen(match),
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
         ),
       ),
     );

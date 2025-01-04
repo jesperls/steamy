@@ -10,6 +10,9 @@ dependencies:
     flutter:
         sdk: flutter
     http: ^1.2.2
+    flutter_card_swiper:
+    cached_network_image:
+    cupertino_icons:
 
 dev_dependencies:
     flutter_test:
@@ -27,6 +30,8 @@ flutter:
     - family: Poppins
       fonts: # Fixed indentation here
         - asset: assets/fonts/Poppins-Regular.ttf
+  uses-material-design: true
+
 
   assets:
     - assets/images/heart1.png
@@ -39,4 +44,6 @@ flutter:
     - assets/images/footer_sticker.png
     - assets/images/pass_eye.png
     - assets/images/ariana_grande.png
+    - assets/images/anna.png
+
 
