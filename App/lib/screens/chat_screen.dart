@@ -19,12 +19,24 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<Map<String, String>> _messages = [];
-  final String serverUrl = "http://localhost:8000/chat";
+  final String serverUrl = "http://localhost:8000/chat"; // Server URL
 
   @override
   void dispose() {
     _messageController.dispose();
     super.dispose();
+  }
+
+  // Simulate a bot's response
+  String _getBotResponse(String userMessage) {
+    // Simple logic to simulate match's response based on user input
+    if (userMessage.contains("hello") || userMessage.contains("hi")) {
+      return "Hi, ${widget.matchedUserName}! How's your day going?";
+    } else if (userMessage.contains("how are you")) {
+      return "${widget.matchedUserName} says: I'm doing great! How about you?";
+    } else {
+      return "${widget.matchedUserName} says: Sorry, what do you mean?.";
+    }
   }
 
   // Send message function to POST to server
@@ -38,7 +50,7 @@ class _ChatScreenState extends State<ChatScreen> {
         Uri.parse(serverUrl),
         headers: {'Content-Type': 'application/json'},
         body: jsonEncode({
-          "match_id": widget.matchedUserId, // Use dynamic user ID
+          "match_id": widget.matchedUserId,
           "sender_id": 1,
           "message_text": messageText,
         }),
@@ -49,6 +61,13 @@ class _ChatScreenState extends State<ChatScreen> {
           _messages.add({"sender": "You", "text": messageText});
         });
         _messageController.clear();
+
+        // Simulate the match's response after the user's message
+        String matchResponse = _getBotResponse(messageText);
+        setState(() {
+          _messages
+              .add({"sender": widget.matchedUserName, "text": matchResponse});
+        });
       } else {
         throw Exception('Failed to send message');
       }

@@ -17,7 +17,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   // Backend login endpoint
-  final String loginEndpoint = "http://127.0.0.1:8000/login"; // Update IP if needed
+  final String loginEndpoint =
+      "http://127.0.0.1:8000/login"; // Update IP if needed
 
   @override
   Widget build(BuildContext context) {
@@ -213,7 +214,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               // Validate fields
               if (email.isEmpty || password.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Please enter both email and password')),
+                  const SnackBar(
+                      content: Text('Please enter both email and password')),
                 );
                 return;
               }
@@ -241,7 +243,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               } catch (e) {
                 // Handle connection error
                 ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(content: Text('Error connecting to the server')),
+                  const SnackBar(
+                      content: Text('Error connecting to the server')),
                 );
               }
             },

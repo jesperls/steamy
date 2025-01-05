@@ -66,20 +66,21 @@ class WelcomeScreen extends StatelessWidget {
           children: [
             // Render all hearts dynamically
             ...hearts.map((heart) => _buildHeart(
-              heart['image'],
-              screenWidth,
-              screenHeight,
-              heart['top'],
-              heart['left'],
-              heart['right'],
-              heart['bottom'],
-              heart['width'],
-              heart['height'],
-              isCenter: heart['center'] ?? false,
-            )),
+                  heart['image'],
+                  screenWidth,
+                  screenHeight,
+                  heart['top'],
+                  heart['left'],
+                  heart['right'],
+                  heart['bottom'],
+                  heart['width'],
+                  heart['height'],
+                  isCenter: heart['center'] ?? false,
+                )),
 
             // Footer Sticker
-            _buildFooterSticker('assets/images/footer_sticker.png', screenWidth),
+            _buildFooterSticker(
+                'assets/images/footer_sticker.png', screenWidth),
 
             // Main Title, Tagline, and Buttons
             Column(
@@ -89,7 +90,8 @@ class WelcomeScreen extends StatelessWidget {
                 const SizedBox(height: 20),
                 _buildTagline(),
                 const SizedBox(height: 40),
-                _buildButton(context, screenWidth, screenHeight), // "Get Started" button
+                _buildButton(
+                    context, screenWidth, screenHeight), // "Get Started" button
 //                const SizedBox(height: 20), // Space between the buttons
 //                _buildMatchingPageButton(context, screenWidth, screenHeight), // "Go to Matching Page" button
               ],
@@ -102,17 +104,17 @@ class WelcomeScreen extends StatelessWidget {
 
   /// Helper method to build hearts dynamically
   Widget _buildHeart(
-      String asset,
-      double screenWidth,
-      double screenHeight,
-      double? top,
-      double? left,
-      double? right,
-      double? bottom,
-      double width,
-      double height, {
-        bool isCenter = false,
-      }) {
+    String asset,
+    double screenWidth,
+    double screenHeight,
+    double? top,
+    double? left,
+    double? right,
+    double? bottom,
+    double width,
+    double height, {
+    bool isCenter = false,
+  }) {
     return Positioned(
       top: top != null ? screenHeight * top : null,
       left: isCenter ? null : (left != null ? screenWidth * left : null),
@@ -192,11 +194,12 @@ class WelcomeScreen extends StatelessWidget {
   }
 
   /// "Get Started" button
-  Widget _buildButton(BuildContext context, double screenWidth, double screenHeight) {
+  Widget _buildButton(
+      BuildContext context, double screenWidth, double screenHeight) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final buttonWidth = constraints.maxWidth * 0.6;
-        final buttonHeight = 50.0;
+        const buttonHeight = 50.0;
 
         return Center(
           child: Container(
@@ -236,11 +239,12 @@ class WelcomeScreen extends StatelessWidget {
   }
 
   /// "Go to Matching Page" button
-  Widget _buildMatchingPageButton(BuildContext context, double screenWidth, double screenHeight) {
+  Widget _buildMatchingPageButton(
+      BuildContext context, double screenWidth, double screenHeight) {
     return LayoutBuilder(
       builder: (context, constraints) {
         final buttonWidth = constraints.maxWidth * 0.6;
-        final buttonHeight = 50.0;
+        const buttonHeight = 50.0;
 
         return Center(
           child: Container(

@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 class LoginSuccessScreen extends StatelessWidget {
   final String email;
 
-  const LoginSuccessScreen({Key? key, required this.email}) : super(key: key);
+  const LoginSuccessScreen({super.key, required this.email});
 
   @override
   Widget build(BuildContext context) {
