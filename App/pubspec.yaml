@@ -1,47 +1,34 @@
 name: steamy
 description: "A new Flutter project."
-publish_to: "none"
 version: 0.1.0
 
 environment:
-    sdk: ^3.5.4
+  sdk: ">=3.5.0 <4.0.0"
 
 dependencies:
-    flutter:
-        sdk: flutter
-    http: ^1.2.2
-    flutter_card_swiper:
-    cached_network_image:
-    cupertino_icons:
-
+  flutter:
+    sdk: flutter
+  http: ^1.2.2
+  flutter_card_swiper: ^2.0.2
+  cached_network_image: ^3.4.1
+  cupertino_icons: ^1.0.8
 
 dev_dependencies:
-    flutter_test:
-        sdk: flutter
-    flutter_lints: ^4.0.0
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^4.0.0
+  mockito: ^5.0.16
+  build_runner: ^2.3.3
 
 flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/
   fonts:
     - family: Chewy
       fonts:
         - asset: assets/fonts/Chewy-Regular.ttf
     - family: Poppins
-      fonts: # Fixed indentation here
+      fonts:
         - asset: assets/fonts/Poppins-Regular.ttf
-  uses-material-design: true
-
-
-  assets:
-    - assets/images/heart1.png
-    - assets/images/heart2.png
-    - assets/images/heart3.png
-    - assets/images/heart4.png
-    - assets/images/heart5.png
-    - assets/images/heart6.png
-    - assets/images/hearts.png
-    - assets/images/footer_sticker.png
-    - assets/images/pass_eye.png
-    - assets/images/ariana_grande.png
-    - assets/images/anna.png
-
-
