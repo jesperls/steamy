@@ -1,4 +1,6 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -9,6 +11,13 @@ class OnboardingScreen extends StatefulWidget {
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   bool isPasswordVisible = false; // Controls password visibility
+
+  // Controllers for email and password
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  // Backend login endpoint
+  final String loginEndpoint = "http://127.0.0.1:8000/login"; // Update IP if needed
 
   @override
   Widget build(BuildContext context) {
@@ -56,7 +65,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
 
               // Email Field
               _buildLabel('Email'),
-              _buildTextField('Enter your email', false),
+              _buildTextField('Enter your email', emailController, false),
 
               // Password Field
               const SizedBox(height: 20),
@@ -94,8 +103,10 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   }
 
   /// Helper Method: Builds a Regular TextField
-  Widget _buildTextField(String hintText, bool isPassword) {
+  Widget _buildTextField(
+      String hintText, TextEditingController controller, bool isPassword) {
     return TextField(
+      controller: controller,
       obscureText: isPassword,
       style: const TextStyle(
         fontFamily: 'Poppins',
@@ -121,6 +132,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   /// Helper Method: Builds a Password Field with Toggle
   Widget _buildPasswordField() {
     return TextField(
+      controller: passwordController,
       obscureText: !isPasswordVisible,
       style: const TextStyle(
         fontFamily: 'Poppins',
@@ -145,11 +157,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               isPasswordVisible = !isPasswordVisible;
             });
           },
-          child: Image.asset(
-            'assets/images/pass_eye.png',
+          child: Icon(
+            isPasswordVisible ? Icons.visibility : Icons.visibility_off,
             color: Colors.white54,
-            width: 20,
-            height: 20,
           ),
         ),
       ),
@@ -175,7 +185,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  /// "Let's Steam!" Button
+  /// "Let's Steam!" Button with Validation and Backend Login
   Widget _buildSteamButton() {
     return Center(
       child: SizedBox(
@@ -195,11 +205,48 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             borderRadius: BorderRadius.circular(30),
           ),
           child: TextButton(
-            onPressed: () {
-              Navigator.pushNamed(context, '/message-screen');
+            onPressed: () async {
+              // Fetch the entered email and password
+              final email = emailController.text.trim();
+              final password = passwordController.text.trim();
+
+              // Validate fields
+              if (email.isEmpty || password.isEmpty) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Please enter both email and password')),
+                );
+                return;
+              }
+
+              // Send login request to the backend
+              try {
+                final response = await http.post(
+                  Uri.parse(loginEndpoint),
+                  headers: <String, String>{'Content-Type': 'application/json'},
+                  body: jsonEncode(<String, String>{
+                    'email': email,
+                    'password': password,
+                  }),
+                );
+
+                if (response.statusCode == 200) {
+                  // Login successful, navigate to the message page
+                  Navigator.pushNamed(context, '/message-screen');
+                } else {
+                  // Invalid credentials
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Login failed: ${response.body}')),
+                  );
+                }
+              } catch (e) {
+                // Handle connection error
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(content: Text('Error connecting to the server')),
+                );
+              }
             },
             child: const Text(
-              "Let's Steam !",
+              "Let's Steam!",
               style: TextStyle(
                 fontFamily: 'Poppins',
                 fontSize: 15,

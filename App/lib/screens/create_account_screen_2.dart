@@ -1,12 +1,27 @@
 import 'package:flutter/material.dart';
 
-class CreateAccount2Screen extends StatelessWidget {
+class CreateAccount2Screen extends StatefulWidget {
   const CreateAccount2Screen({super.key});
 
   @override
+  State<CreateAccount2Screen> createState() => _CreateAccount2ScreenState();
+}
+
+class _CreateAccount2ScreenState extends State<CreateAccount2Screen> {
+  final TextEditingController nameController = TextEditingController();
+  String? selectedInterest;
+  String? selectedLookingFor;
+
+  @override
   Widget build(BuildContext context) {
-    final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
+    final screenWidth = MediaQuery
+        .of(context)
+        .size
+        .width;
+    final screenHeight = MediaQuery
+        .of(context)
+        .size
+        .height;
 
     return Scaffold(
       backgroundColor: const Color.fromARGB(255, 86, 55, 157),
@@ -31,19 +46,35 @@ class CreateAccount2Screen extends StatelessWidget {
 
               // Name Input
               _buildLabel('Name'),
-              _buildTextField('Enter your name'),
+              _buildTextField('Enter your name', nameController),
 
               const SizedBox(height: 20),
 
               // Interests Dropdown
               _buildLabel('Interests'),
-              _buildDropdown(['Music', 'Movies', 'Sports', 'Reading']),
+              _buildDropdown(
+                items: ['Music', 'Movies', 'Sports', 'Reading'],
+                onChanged: (value) {
+                  setState(() {
+                    selectedInterest = value;
+                  });
+                },
+                value: selectedInterest,
+              ),
 
               const SizedBox(height: 20),
 
               // Looking For Dropdown
               _buildLabel("I'm looking for:"),
-              _buildDropdown(['Friendship', 'Dating', 'Networking']),
+              _buildDropdown(
+                items: ['Friendship', 'Dating', 'Networking'],
+                onChanged: (value) {
+                  setState(() {
+                    selectedLookingFor = value;
+                  });
+                },
+                value: selectedLookingFor,
+              ),
 
               const SizedBox(height: 40),
 
@@ -87,8 +118,9 @@ class CreateAccount2Screen extends StatelessWidget {
   }
 
   /// TextField Widget
-  Widget _buildTextField(String hintText) {
+  Widget _buildTextField(String hintText, TextEditingController controller) {
     return TextField(
+      controller: controller,
       style: const TextStyle(
         fontFamily: 'Poppins',
         fontSize: 15,
@@ -111,11 +143,13 @@ class CreateAccount2Screen extends StatelessWidget {
   }
 
   /// Dropdown Widget
-  Widget _buildDropdown(List<String> items) {
-    String? selectedValue;
-
+  Widget _buildDropdown({
+    required List<String> items,
+    required ValueChanged<String?> onChanged,
+    required String? value,
+  }) {
     return DropdownButtonFormField<String>(
-      value: selectedValue,
+      value: value,
       dropdownColor: const Color.fromARGB(255, 86, 55, 157),
       style: const TextStyle(
         fontFamily: 'Poppins',
@@ -134,12 +168,11 @@ class CreateAccount2Screen extends StatelessWidget {
           child: Text(item),
         );
       }).toList(),
-      onChanged: (value) {
-        selectedValue = value;
-      },
+      onChanged: onChanged,
     );
   }
 
+  /// Join Button
   /// Join Button
   Widget _buildJoinButton(BuildContext context) {
     return Center(
@@ -161,9 +194,31 @@ class CreateAccount2Screen extends StatelessWidget {
         ),
         child: TextButton(
           onPressed: () {
-            // Add navigation logic here
-            Navigator.popUntil(context, ModalRoute.withName('/'));
-            //add path to matching page
+            // Validate input fields
+            if (nameController.text
+                .trim()
+                .isEmpty) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please enter your name')),
+              );
+              return;
+            }
+            if (selectedInterest == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Please select an interest')),
+              );
+              return;
+            }
+            if (selectedLookingFor == null) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(
+                    content: Text("Please select what you're looking for")),
+              );
+              return;
+            }
+
+            // Navigate to the login page
+            Navigator.pushReplacementNamed(context, '/login');
           },
           child: const Text(
             'Join Steamy',
@@ -172,7 +227,6 @@ class CreateAccount2Screen extends StatelessWidget {
               fontSize: 16,
               color: Colors.white,
               fontWeight: FontWeight.bold,
-
             ),
           ),
         ),

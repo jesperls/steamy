@@ -14,9 +14,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   bool isRePasswordVisible = false;
 
   // Text Controllers for capturing input
-  TextEditingController emailController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  TextEditingController rePasswordController = TextEditingController();
+  final TextEditingController emailController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+  final TextEditingController rePasswordController = TextEditingController();
 
   // API Endpoint
   final String registerEndpoint = "http://127.0.0.1:8000/register"; // Replace with actual IP if needed
@@ -201,9 +201,19 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
             ),
             child: TextButton(
               onPressed: () async {
-                print('Continue button pressed');
+                // Input validation
+                final email = emailController.text.trim();
+                final password = passwordController.text.trim();
+                final rePassword = rePasswordController.text.trim();
 
-                if (passwordController.text != rePasswordController.text) {
+                if (email.isEmpty || password.isEmpty || rePassword.isEmpty) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('All fields are required')),
+                  );
+                  return;
+                }
+
+                if (password != rePassword) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Passwords do not match')),
                   );
@@ -211,19 +221,15 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 }
 
                 try {
-                  print('Sending request to $registerEndpoint');
                   final response = await http.post(
                     Uri.parse(registerEndpoint),
                     headers: <String, String>{'Content-Type': 'application/json'},
                     body: jsonEncode(<String, String>{
-                      'email': emailController.text,
-                      'password': passwordController.text,
+                      'email': email,
+                      'password': password,
                       'display_name': 'User',
                     }),
                   );
-
-                  print('Response status: ${response.statusCode}');
-                  print('Response body: ${response.body}');
 
                   if (response.statusCode == 200) {
                     final responseBody = jsonDecode(response.body);
@@ -245,14 +251,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                     );
                   }
                 } catch (e) {
-                  print('Error occurred: $e');
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Error connecting to server')),
                   );
                 }
               },
-
-
               child: const Text(
                 'Continue ->',
                 style: TextStyle(
