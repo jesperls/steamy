@@ -4,7 +4,7 @@ import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 class ApiService {
-  final String baseUrl = "http://localhost:8000";
+  final String baseUrl = "http://132.145.48.11:8000";
 
   String get getBaseUrl => baseUrl;
 
