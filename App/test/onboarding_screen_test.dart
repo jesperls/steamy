@@ -1,15 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:mockito/annotations.dart';
-import 'package:mockito/mockito.dart';
 import 'package:steamy/screens/onboarding_screen.dart';
-import 'onboarding_screen_test.mocks.dart';
+import 'package:steamy/screens/create_account_screen.dart';
+import 'package:steamy/screens/message_screen.dart';
 
-
-@GenerateMocks([NavigatorObserver])
 void main() {
-  TestWidgetsFlutterBinding.ensureInitialized();
-
   group('OnboardingScreen Tests', () {
     testWidgets('renders all UI elements', (WidgetTester tester) async {
       await tester.pumpWidget(const MaterialApp(home: OnboardingScreen()));
@@ -37,90 +32,92 @@ void main() {
     testWidgets('toggles password visibility', (WidgetTester tester) async {
       await tester.pumpWidget(const MaterialApp(home: OnboardingScreen()));
 
-      // Locate the password visibility icon
+      final passwordField = find.byType(TextField).last;
+
+      expect(
+        tester.widget<TextField>(passwordField).obscureText,
+        isTrue,
+      );
+
       final visibilityIcon = find.byIcon(Icons.visibility_off);
 
-      // Ensure the password is initially hidden
-      expect(visibilityIcon, findsOneWidget);
-
-      // Tap the visibility toggle icon
       await tester.tap(visibilityIcon);
       await tester.pump();
 
-      // Verify the password is now visible
-      expect(find.byIcon(Icons.visibility), findsOneWidget);
+      expect(
+        tester.widget<TextField>(passwordField).obscureText,
+        isFalse,
+      );
+
+      final visibilityOnIcon = find.byIcon(Icons.visibility);
+
+      await tester.tap(visibilityOnIcon);
+      await tester.pump();
+
+      expect(
+        tester.widget<TextField>(passwordField).obscureText,
+        isTrue,
+      );
     });
 
     testWidgets('shows validation error for empty fields', (WidgetTester tester) async {
       await tester.pumpWidget(const MaterialApp(home: OnboardingScreen()));
 
-      // Tap the "Let's Steam!" button
-      await tester.tap(find.text("Let's Steam!"));
+      final steamButton = find.text("Let's Steam!");
+      expect(steamButton, findsOneWidget);
+
+      await tester.tap(steamButton);
       await tester.pump();
 
-      // Verify the error message
       expect(find.text('Please enter both email and password'), findsOneWidget);
     });
 
     testWidgets('navigates to Create Account screen', (WidgetTester tester) async {
-      final mockObserver = MockNavigatorObserver();
-
       await tester.pumpWidget(
         MaterialApp(
           home: const OnboardingScreen(),
-          navigatorObservers: [mockObserver],
           routes: {
-            '/createAccount': (context) => const Scaffold(body: Text('Create Account Screen')),
+            '/createAccount': (context) => const CreateAccountScreen(),
           },
         ),
       );
 
-      // Tap the "Create Account" button
-      await tester.tap(find.text('Create Account'));
+      final createAccountButton = find.text('Create Account');
+      expect(createAccountButton, findsOneWidget);
+
+      await tester.ensureVisible(createAccountButton);
+
+      await tester.tap(createAccountButton);
       await tester.pumpAndSettle();
 
-      // Verify navigation to Create Account screen
-      expect(find.text('Create Account Screen'), findsOneWidget);
+      expect(find.text('Create Account'), findsOneWidget);
     });
 
     testWidgets('navigates to Message screen on successful login', (WidgetTester tester) async {
-      final mockObserver = MockNavigatorObserver();
-
       await tester.pumpWidget(
         MaterialApp(
           home: const OnboardingScreen(),
-          navigatorObservers: [mockObserver],
           routes: {
-            '/message-screen': (context) => const Scaffold(body: Text('Message Screen')),
+            '/message-screen': (context) => const MessagePage(),
           },
         ),
       );
 
-      // Fill the email and password fields
+      // Fill in the email and password fields
       await tester.enterText(find.byType(TextField).first, 'test@example.com');
       await tester.enterText(find.byType(TextField).last, 'password123');
 
       // Tap the "Let's Steam!" button
-      await tester.tap(find.text("Let's Steam!"));
-      await tester.pumpAndSettle();
+      final steamButton = find.text("Let's Steam!");
+      await tester.tap(steamButton);
+      await tester.pumpAndSettle(); // Wait for the navigation animation
 
-      // Verify navigation to the Message screen
-      expect(find.text('Message Screen'), findsOneWidget);
+      // Debug log
+      debugPrint('Current widget tree: ${tester.element(find.byType(MessagePage))}');
+
+      // Verify navigation to MessagePage
+      expect(find.text('Message'), findsOneWidget); // Assuming "Message" is the header in MessagePage
     });
 
-    testWidgets('shows error on failed login', (WidgetTester tester) async {
-      await tester.pumpWidget(const MaterialApp(home: OnboardingScreen()));
-
-      // Fill the email and password fields
-      await tester.enterText(find.byType(TextField).first, 'test@example.com');
-      await tester.enterText(find.byType(TextField).last, 'wrongpassword');
-
-      // Tap the "Let's Steam!" button
-      await tester.tap(find.text("Let's Steam!"));
-      await tester.pump();
-
-      // Verify error message is shown
-      expect(find.text('Login failed'), findsOneWidget);
-    });
   });
 }

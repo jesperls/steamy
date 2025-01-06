@@ -20,6 +20,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   final String loginEndpoint =
       "http://127.0.0.1:8000/login"; // Update IP if needed
 
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
