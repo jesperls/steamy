@@ -53,7 +53,7 @@ class ApiService {
       await SharedPreferences.getInstance().then((prefs) => prefs.setString('userId', data['id'].toString()));
       return data;
     } else {
-      throw Exception('Login failed: ${response.body}');
+      return {'error': 'Login failed'};
     }
   }
 

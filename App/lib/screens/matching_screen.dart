@@ -79,7 +79,7 @@ class _MatchPageState extends State<MatchPage> {
     } catch (error) {
       log(error.toString());
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error processing swipe: $error')),
+        SnackBar(content: Text('Error processing swipe, user already matched')),
       );
       return false;
     }
