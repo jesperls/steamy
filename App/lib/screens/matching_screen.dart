@@ -56,7 +56,8 @@ class _MatchPageState extends State<MatchPage> {
       final match = await ApiService().fetchNextMatch("1");
       if (match != null) {
         setState(() {
-          discoveredUsers.add(match); // This naturally adds to the end of the list
+          discoveredUsers
+              .add(match); // This naturally adds to the end of the list
         });
       }
     } catch (error) {
@@ -64,7 +65,8 @@ class _MatchPageState extends State<MatchPage> {
     }
   }
 
-  Future<bool> _onSwipe(int index, int? secondaryIndex, CardSwiperDirection direction) async {
+  Future<bool> _onSwipe(
+      int index, int? secondaryIndex, CardSwiperDirection direction) async {
     if (index < 0 || index >= discoveredUsers.length) return false;
 
     final swipedUser = discoveredUsers[index];
@@ -74,15 +76,8 @@ class _MatchPageState extends State<MatchPage> {
         await ApiService().sendMatchRequest("1", swipedUser['id'].toString());
       }
 
-      // Remove the swiped card
-      setState(() {
-        discoveredUsers.removeAt(index);
-      });
-
       // Preload next match if we're running low
-      if (discoveredUsers.length <= preloadThreshold) {
-        await _preloadNextMatch();
-      }
+      await _preloadNextMatch();
 
       return true;
     } catch (error) {
@@ -179,16 +174,21 @@ class _MatchPageState extends State<MatchPage> {
                     : discoveredUsers.isEmpty
                         ? const Text('No more matches available')
                         : CardSwiper(
-                            cardBuilder: (context, index,
+                            cardBuilder: (context,
+                                index,
                                 horizontalOffsetPercentage,
                                 verticalOffsetPercentage) {
                               final user = discoveredUsers[index];
                               return _buildUserCard(
                                 screenWidth,
                                 screenHeight,
-                                user['profile_picture'] ?? '',
+                                (user['pictures']?.firstWhere((pic) =>
+                                            pic['is_profile_picture'] ==
+                                            true)['picture_url'] ??
+                                        '') +
+                                    '?${user['display_name']}',
                                 user['display_name'] ?? 'Anonymous',
-                                user['full_name'] ?? 'Unknown',
+                                user['bio'] ?? 'Unknown',
                               );
                             },
                             cardsCount: discoveredUsers.length,
@@ -199,6 +199,7 @@ class _MatchPageState extends State<MatchPage> {
                                     down: false,
                                     left: true,
                                     right: true),
+                            isLoop: false,
                           ),
               ),
             ),
@@ -206,7 +207,7 @@ class _MatchPageState extends State<MatchPage> {
             // "Match" Button
             Padding(
               padding:
-              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
               child: _buildMatchButton(context),
             ),
           ],
@@ -337,16 +338,16 @@ class _MatchPageState extends State<MatchPage> {
         ),
         child: isLoading
             ? const CircularProgressIndicator.adaptive(
-          backgroundColor: Colors.white,
-        )
+                backgroundColor: Colors.white,
+              )
             : const Text(
-          'Match',
-          style: TextStyle(
-            color: Colors.white,
-            fontWeight: FontWeight.bold,
-            fontSize: 16,
-          ),
-        ),
+                'Match',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 16,
+                ),
+              ),
       ),
     );
   }

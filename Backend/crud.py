@@ -77,6 +77,8 @@ def get_next_match(db: Session, user_action: schemas.UserAction):
         .first()
     )
 
+    print(next_match.pictures)
+
     return next_match
 
 

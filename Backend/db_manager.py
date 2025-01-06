@@ -19,7 +19,7 @@ def init_db():
         tables = inspector.get_table_names()
         if not tables:
             Base.metadata.create_all(bind=engine)
-            sql_file_path = os.path.join(os.path.dirname(__file__), 'database', 'test_data.sql')
+            sql_file_path = os.path.join(os.path.dirname(__file__), 'Database', 'test_data.sql')
             load_sql_file(db, sql_file_path)
         else:
             Base.metadata.create_all(bind=engine)

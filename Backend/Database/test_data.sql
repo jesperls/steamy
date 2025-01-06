@@ -10,17 +10,24 @@ INSERT INTO users (email, display_name, password_hash, bio, preferences, locatio
 ('Dug@darkrage.com', 'Dug', 'hashed_password3', 'Wowzer', NULL, 40.7128, -74.0060);
 
 INSERT INTO user_pictures (user_id, picture_url, is_profile_picture) VALUES
-(1, 'Devnull1.png', TRUE),
-(1, 'Devnull2.png', FALSE),
-(2, 'Orsi1.png', TRUE),
-(2, 'Orsi2.png', FALSE),
-(3, 'Rando1.png', TRUE);
-(4, 'Rando2.png', TRUE);
-(5, 'Rando3.png', TRUE);
-(6, 'Rando4.png', TRUE);
-(7, 'Rando5.png', TRUE);
-(8, 'Rando6.png', TRUE);
-(9, 'Rando7.png', TRUE);
+(1, 'https://cataas.com/cat/says/hello', TRUE),
+(1, 'https://cataas.com/cat/says/hello', FALSE),
+(2, 'https://cataas.com/cat/says/hello', TRUE),
+(2, 'https://cataas.com/cat/says/hello', FALSE),
+(3, 'https://cataas.com/cat/says/hello', TRUE),
+(3, 'https://cataas.com/cat/says/hello', FALSE),
+(4, 'https://cataas.com/cat/says/hello', TRUE),
+(4, 'https://cataas.com/cat/says/hello', FALSE),
+(5, 'https://cataas.com/cat/says/hello', TRUE),
+(5, 'https://cataas.com/cat/says/hello', FALSE),
+(6, 'https://cataas.com/cat/says/hello', TRUE),
+(6, 'https://cataas.com/cat/says/hello', FALSE),
+(7, 'https://cataas.com/cat/says/hello', TRUE),
+(7, 'https://cataas.com/cat/says/hello', FALSE),
+(8, 'https://cataas.com/cat/says/hello', TRUE),
+(8, 'https://cataas.com/cat/says/hello', FALSE),
+(9, 'https://cataas.com/cat/says/hello', TRUE),
+(9, 'https://cataas.com/cat/says/hello', FALSE);
 
 INSERT INTO user_interests (user_id, interest) VALUES
 (1, 'Sleap'),
