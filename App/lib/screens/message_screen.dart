@@ -29,77 +29,73 @@ class _MessagePageState extends State<MessagePage> {
     _searchController.addListener(_onSearchChanged);
   }
 
-  // Fetch server data with error handling
   Future<void> _fetchMatches() async {
     setState(() {
-      isLoading = true; // Show loading indicator
+      isLoading = true;
     });
 
     try {
-      // Fetch the data from the API
-      final response = await http
-          .post(
+      final response = await http.post(
         Uri.parse('http://127.0.0.1:8000/getMatches'),
         headers: {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
-        body: jsonEncode({'user_id': "1"}), // Replace with the actual user ID
-      )
-          .timeout(const Duration(seconds: 10)); // Timeout after 10 seconds
+        body: jsonEncode({'user_id': 1}), // Send user_id as integer
+      );
+
+      print("Response status code: ${response.statusCode}");
+      print("Response body: ${response.body}");
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
+        log("Decoded response: $data");
 
         if (data is List && data.isNotEmpty) {
           setState(() {
-            // Retain the original data transformation logic
             matches = List<Map<String, dynamic>>.from(
               data.map(
                 (item) => {
                   "id": item["id"].toString(),
                   "user_id_1": item["user_id_1"].toString(),
                   "user_id_2": item["user_id_2"].toString(),
-                  "match_score": item["match_score"].toString(),
+
                   "is_matched": item["is_matched"]?.toString() ?? "false",
                   "created_at": item["created_at"] ?? "N/A",
                   "updated_at": item["updated_at"] ?? "N/A",
-                  "name": "Emily", // Placeholder name
-                  "image":
-                      "https://img.freepik.com/free-photo/portrait-happy-smiling-woman-standing-square-sunny-summer-spring-day-outside-cute-smiling-woman-looking-you-attractive-young-girl-enjoying-summer-filtered-image-flare-sunshine_231208-6734.jpg?semt=ais_hybrid",
+                  "name": item["name"] ?? "Unknown", // Use name from backend
+                  "image": item["image"] ??
+                      "default_image_url_here", // Use image URL from backend
                 },
               ),
             );
-
-            // Keep only the first 5 matches for display in the horizontal scroll
             newMatches = matches.take(5).toList();
+            log("Matches populated: $matches");
+            log("New matches populated: $newMatches");
           });
         } else {
+          log("No valid data found in response.");
           setState(() {
             matches = [];
             newMatches = [];
           });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("No new matches found.")),
-          );
         }
       } else {
-        throw Exception("Failed to load data.");
+        throw Exception("HTTP Error: ${response.statusCode}");
       }
     } catch (error) {
-      log(error.toString());
+      log("Error fetching matches: $error");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error loading matches: $error')),
       );
+    } finally {
+      setState(() {
+        isLoading = false;
+        hasFetched = true;
+      });
     }
-
-    setState(() {
-      isLoading = false; // Stop showing the loading indicator
-      hasFetched = true;
-    });
   }
 
-  // Handle search functionality
   void _onSearchChanged() {
     setState(() {
       final query = _searchController.text.toLowerCase();
@@ -109,12 +105,13 @@ class _MessagePageState extends State<MessagePage> {
     });
   }
 
-  // Navigate to the chat screen and move the match from horizontal scroll to the list
   void _navigateToChatScreen(Map<String, dynamic> user) {
     setState(() {
-      // Remove match from newMatches and add to filteredMatches
+      // Only add the user to filteredMatches if they are not already in it
+      if (!filteredMatches.any((match) => match['id'] == user['id'])) {
+        filteredMatches.add(user);
+      }
       newMatches.remove(user);
-      filteredMatches.add(user);
     });
 
     Navigator.push(
@@ -128,7 +125,6 @@ class _MessagePageState extends State<MessagePage> {
     );
   }
 
-  // Build the circular icon with shadow
   Widget _buildIcon(IconData icon, Function() onTap) {
     return GestureDetector(
       onTap: onTap,
@@ -167,15 +163,15 @@ class _MessagePageState extends State<MessagePage> {
                 )
               : Column(
                   children: [
-                    // Header Section with circular icons and title
                     Padding(
                       padding: const EdgeInsets.symmetric(vertical: 15.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           _buildIcon(Icons.person, () {
-                            Navigator.pushNamed(context, '/matching_page');
-                          }), // Left icon
+                            // Navigate to Create Profile page
+                            Navigator.pushNamed(context, '/createAccount2');
+                          }),
                           const Text(
                             'Message',
                             style: TextStyle(
@@ -186,7 +182,8 @@ class _MessagePageState extends State<MessagePage> {
                           ),
                           Stack(
                             children: [
-                              _buildIcon(Icons.chat_bubble, () {
+                              _buildIcon(Icons.explore, () {
+                                // Navigate to Explore page
                                 Navigator.pushNamed(context, '/matching_page');
                               }),
                               const Positioned(
@@ -195,13 +192,11 @@ class _MessagePageState extends State<MessagePage> {
                                 child: Badge(),
                               ),
                             ],
-                          ), // Right icon with badge
+                          ),
                         ],
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    // Search Bar
                     TextField(
                       controller: _searchController,
                       decoration: InputDecoration(
@@ -217,8 +212,6 @@ class _MessagePageState extends State<MessagePage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-
-                    // Horizontally scrollable new matches
                     newMatches.isNotEmpty
                         ? SizedBox(
                             height: 100,
@@ -258,15 +251,12 @@ class _MessagePageState extends State<MessagePage> {
                             ),
                           )
                         : const SizedBox(),
-
                     const SizedBox(height: 10),
-
-                    // Main list or empty state
                     filteredMatches.isEmpty
                         ? const Expanded(
                             child: Center(
                               child: Text(
-                                'No matches found.',
+                                'No ongoing chats.',
                                 style:
                                     TextStyle(fontSize: 16, color: Colors.grey),
                               ),
