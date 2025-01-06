@@ -189,13 +189,6 @@ class _MatchPageState extends State<MatchPage> {
                           ),
               ),
             ),
-
-            // "Match" Button
-            Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 20.0),
-              child: _buildMatchButton(context),
-            ),
           ],
         ),
       ),
