@@ -63,27 +63,26 @@ def get_next_match(db: Session, user_action: schemas.UserAction):
     if not current_user:
         return None
 
-    # Get all previous matches to exclude
-    previous_matches = db.query(models.Match).filter(
-        models.Match.user_id_1 == user_action.user_id
-    )
-    excluded_user_ids = set()
-    for match in previous_matches:
-        excluded_user_ids.add(match.user_id_1)
-        excluded_user_ids.add(match.user_id_2)
-
+    matched_user_ids = set()
+    for m in current_user.matches + current_user.matches_as_second_user:
+        if m.user_id_1 == current_user.id:
+            matched_user_ids.add(m.user_id_2)
+        elif m.user_id_2 == current_user.id and m.is_matched:
+            matched_user_ids.add(m.user_id_1)
+    print(matched_user_ids)
     # Query for a single potential match using order by random
     next_match = (
         db.query(models.User)
         .filter(
-            and_(
-                models.User.id != user_action.user_id,
-                ~models.User.id.in_(excluded_user_ids),
-            )
+            models.User.id != current_user.id,
+            ~models.User.id.in_(matched_user_ids),
         )
         .order_by(func.random())
         .first()
     )
+    if not next_match:
+        return None
+    print(next_match.id)
 
     print(next_match.pictures)
 
@@ -131,8 +130,12 @@ def create_or_update_match(db: Session, action: schemas.MatchAction):
     existing_match = (
         db.query(models.Match)
         .filter(
-            models.Match.user_id_1 == action.matched_id,
-            models.Match.user_id_2 == action.matcher_id,
+            or_(
+                (models.Match.user_id_1 == action.matched_id)
+                & (models.Match.user_id_2 == action.matcher_id),
+                (models.Match.user_id_1 == action.matcher_id)
+                & (models.Match.is_matched == True),
+            )
         )
         .first()
     )

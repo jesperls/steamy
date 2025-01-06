@@ -17,6 +17,7 @@ class MatchPage extends StatefulWidget {
 
 class _MatchPageState extends State<MatchPage> {
   bool isLoading = false;
+  bool matchesLeft = true;
   List<Map<String, dynamic>> discoveredUsers = [];
   final ApiService apiService = ApiService();
 
@@ -53,9 +54,12 @@ class _MatchPageState extends State<MatchPage> {
     try {
       final match = await apiService.fetchNextMatch();
       if (match != null) {
-        print(match);
         setState(() {
           discoveredUsers.add(match);
+        });
+      } else {
+        setState(() {
+          matchesLeft = false;
         });
       }
     } catch (error) {
@@ -65,7 +69,6 @@ class _MatchPageState extends State<MatchPage> {
 
   Future<bool> _onSwipe(
       int index, int? secondaryIndex, CardSwiperDirection direction) async {
-    _preloadNextMatch();
     if (index < 0 || index >= discoveredUsers.length) return false;
 
     final swipedUser = discoveredUsers[index];
@@ -74,6 +77,7 @@ class _MatchPageState extends State<MatchPage> {
       if (direction == CardSwiperDirection.right) {
         await apiService.sendMatchRequest(swipedUser['id'].toString());
       }
+      _preloadNextMatch();
 
       return true;
     } catch (error) {
@@ -154,7 +158,7 @@ class _MatchPageState extends State<MatchPage> {
               child: Center(
                 child: isLoading
                     ? const CircularProgressIndicator()
-                    : discoveredUsers.isEmpty
+                    : !matchesLeft
                         ? const Text('No more matches available')
                         : CardSwiper(
                             cardBuilder: (context,
@@ -170,8 +174,7 @@ class _MatchPageState extends State<MatchPage> {
                                     (user['pictures']?.firstWhere((pic) =>
                                             pic['is_profile_picture'] ==
                                             true)['picture_url'] ??
-                                        '') +
-                                    '?${user['display_name']}',
+                                        ''),
                                 user['display_name'] ?? 'Anonymous',
                                 user['bio'] ?? 'Unknown',
                               );
