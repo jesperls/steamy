@@ -18,11 +18,12 @@ class MatchPage extends StatefulWidget {
 class _MatchPageState extends State<MatchPage> {
   bool isLoading = false;
   List<Map<String, dynamic>> discoveredUsers = [];
-  final int preloadThreshold = 2; // Preload when 2 or fewer cards remain
+  final ApiService apiService = ApiService();
 
   @override
   void initState() {
     super.initState();
+    apiService.ensureLoggedIn(context);
     _loadInitialMatches();
   }
 
@@ -34,10 +35,7 @@ class _MatchPageState extends State<MatchPage> {
     try {
       // Load first 2 matches
       for (int i = 0; i <= 2; i++) {
-        final match = await ApiService().fetchNextMatch("1");
-        if (match != null) {
-          discoveredUsers.add(match);
-        }
+        await _preloadNextMatch();
       }
     } catch (error) {
       log(error.toString());
@@ -53,11 +51,11 @@ class _MatchPageState extends State<MatchPage> {
 
   Future<void> _preloadNextMatch() async {
     try {
-      final match = await ApiService().fetchNextMatch("1");
+      final match = await apiService.fetchNextMatch();
       if (match != null) {
+        print(match);
         setState(() {
-          discoveredUsers
-              .add(match); // This naturally adds to the end of the list
+          discoveredUsers.add(match);
         });
       }
     } catch (error) {
@@ -67,17 +65,15 @@ class _MatchPageState extends State<MatchPage> {
 
   Future<bool> _onSwipe(
       int index, int? secondaryIndex, CardSwiperDirection direction) async {
+    _preloadNextMatch();
     if (index < 0 || index >= discoveredUsers.length) return false;
 
     final swipedUser = discoveredUsers[index];
 
     try {
       if (direction == CardSwiperDirection.right) {
-        await ApiService().sendMatchRequest("1", swipedUser['id'].toString());
+        await apiService.sendMatchRequest(swipedUser['id'].toString());
       }
-
-      // Preload next match if we're running low
-      await _preloadNextMatch();
 
       return true;
     } catch (error) {
@@ -108,7 +104,7 @@ class _MatchPageState extends State<MatchPage> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   _buildIcon(Icons.person, () {
-                    Navigator.pushNamed(context, '/createAccount2');
+                    Navigator.pushNamed(context, '/editAccount');
                   }), // Left icon
                   const Text(
                     'Discover',
@@ -149,19 +145,6 @@ class _MatchPageState extends State<MatchPage> {
                       color: Colors.black,
                     ),
                   ),
-                  GestureDetector(
-                    onTap: () {
-                      // Handle "View All" tap
-                    },
-                    child: const Text(
-                      'View All',
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: Color(0xFFD9A1F2), // Purple text color
-                      ),
-                    ),
-                  ),
                 ],
               ),
             ),
@@ -182,7 +165,9 @@ class _MatchPageState extends State<MatchPage> {
                               return _buildUserCard(
                                 screenWidth,
                                 screenHeight,
-                                (user['pictures']?.firstWhere((pic) =>
+                                apiService.getBaseUrl +
+                                    '/getImage/' +
+                                    (user['pictures']?.firstWhere((pic) =>
                                             pic['is_profile_picture'] ==
                                             true)['picture_url'] ??
                                         '') +
@@ -193,6 +178,7 @@ class _MatchPageState extends State<MatchPage> {
                             },
                             cardsCount: discoveredUsers.length,
                             onSwipe: _onSwipe,
+                            onEnd: _preloadNextMatch,
                             allowedSwipeDirection:
                                 const AllowedSwipeDirection.only(
                                     up: false,

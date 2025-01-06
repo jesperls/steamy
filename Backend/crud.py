@@ -28,6 +28,18 @@ def create_user(db: Session, user: schemas.UserCreate):
     return db_user
 
 
+def upload_picture(db: Session, picture: schemas.UserPicture):
+    db_picture = models.UserPictures(
+        user_id=picture.user_id,
+        picture_url=picture.picture_url,
+        is_profile_picture=picture.is_profile_picture,
+    )
+    db.add(db_picture)
+    db.commit()
+    db.refresh(db_picture)
+    return db_picture
+
+
 def authenticate_user(db: Session, credentials: schemas.UserLogin):
     user = get_user_by_email(db, email=credentials.email)
     if not user or not pwd_context.verify(credentials.password, user.password_hash):
@@ -49,14 +61,11 @@ def get_next_match(db: Session, user_action: schemas.UserAction):
     if not current_user:
         return None
 
-    # Get all previous matches (both ways) to exclude
+    # Get all previous matches to exclude
     previous_matches = (
         db.query(models.Match)
         .filter(
-            or_(
-                models.Match.user_id_1 == user_action.user_id,
-                models.Match.user_id_2 == user_action.user_id
-            )
+            models.Match.user_id_1 == user_action.user_id
         )
     )
     excluded_user_ids = set()

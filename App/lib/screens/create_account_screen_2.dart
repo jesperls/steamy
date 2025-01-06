@@ -1,4 +1,7 @@
+import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
 
 class CreateAccount2Screen extends StatefulWidget {
   const CreateAccount2Screen({super.key});
@@ -8,9 +11,23 @@ class CreateAccount2Screen extends StatefulWidget {
 }
 
 class _CreateAccount2ScreenState extends State<CreateAccount2Screen> {
+  
   final TextEditingController nameController = TextEditingController();
+  final TextEditingController bioController = TextEditingController();
+  final ApiService apiService = ApiService();
   String? selectedInterest;
   String? selectedLookingFor;
+  
+  late String email;
+  late String password;
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
+    email = args['email'];
+    password = args['password'];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,6 +64,12 @@ class _CreateAccount2ScreenState extends State<CreateAccount2Screen> {
               // Name Input
               _buildLabel('Name'),
               _buildTextField('Enter your name', nameController),
+
+              const SizedBox(height: 20),
+
+              // Bio Input
+              _buildLabel('Bio'),
+              _buildTextField('One sentence description of yourself', bioController),
 
               const SizedBox(height: 20),
 
@@ -173,7 +196,6 @@ class _CreateAccount2ScreenState extends State<CreateAccount2Screen> {
   }
 
   /// Join Button
-  /// Join Button
   Widget _buildJoinButton(BuildContext context) {
     return Center(
       child: Container(
@@ -193,32 +215,37 @@ class _CreateAccount2ScreenState extends State<CreateAccount2Screen> {
           borderRadius: BorderRadius.circular(30),
         ),
         child: TextButton(
-          onPressed: () {
-            // Validate input fields
-            if (nameController.text
-                .trim()
-                .isEmpty) {
+          onPressed: () async {
+            final name = nameController.text.trim();
+            final bio = bioController.text.trim();
+            final interest = selectedInterest;
+            final lookingFor = selectedLookingFor;
+
+            if (name.isEmpty || bio.isEmpty || interest == null || lookingFor == null) {
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Please enter your name')),
-              );
-              return;
-            }
-            if (selectedInterest == null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Please select an interest')),
-              );
-              return;
-            }
-            if (selectedLookingFor == null) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                    content: Text("Please select what you're looking for")),
+                const SnackBar(content: Text('All fields are required')),
               );
               return;
             }
 
-            // Navigate to the login page
-            Navigator.pushReplacementNamed(context, '/login');
+            try {
+              final userData = await apiService.registerUser(
+                email,
+                password,
+                name,
+                bio: bio,
+                preferences: lookingFor,
+              );
+              Navigator.pushReplacementNamed(
+                context,
+                '/message-screen',
+                arguments: userData,
+              );
+            } catch (e) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Registration failed: $e')),
+              );
+            }
           },
           child: const Text(
             'Join Steamy',

@@ -8,6 +8,7 @@ import 'screens/matching_screen.dart'
 as matching_page; // Alias for matching_page
 import 'screens/onboarding_screen.dart' as onboarding; // Alias for onboarding
 import 'screens/welcome_screen.dart';
+import 'screens/edit_account_screen.dart'; // Import EditAccountScreen
 
 void main() {
   runApp(const MainApp());
@@ -43,6 +44,8 @@ class MainApp extends StatelessWidget {
         const matching_page.MatchPage(), // Matching Page
         '/message-screen': (context) =>
         const message_screen.MessagePage(), //added
+        '/editAccount': (context) =>
+        const EditAccountScreen(), // Edit Account
       },
     );
   }

@@ -10,7 +10,9 @@ from schemas import (
     MatchAction,
     UserAction,
     MessageGet,
+    UserPicture,
 )
+from fastapi.responses import FileResponse
 
 app = FastAPI()
 
@@ -38,7 +40,11 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
     db_user = crud.get_user_by_email(db, email=user.email)
     if db_user:
         raise HTTPException(status_code=400, detail="Email already registered")
-    return crud.create_user(db=db, user=user)
+    user = crud.create_user(db=db, user=user)
+    user_id = user.id
+    picture = UserPicture(user_id=user_id, picture_url="default.jpg", is_profile_picture=True)
+    crud.upload_picture(db=db, picture=picture)
+    return {"message": "User registered successfully", "id": user_id}
 
 
 # User login
@@ -107,6 +113,12 @@ def get_matches(action: UserAction, db: Session = Depends(get_db)):
 @app.post("/getMessages")
 def get_messages(message: MessageGet, db: Session = Depends(get_db)):
     return crud.get_messages(db=db, message=message)
+
+# Get an image from the backend with filename from request parameter
+@app.get("/getImage/{filename}")
+def get_image(filename: str):
+    return FileResponse(f"assets/images/{filename}")
+
 
 if __name__ == "__main__":
     import uvicorn

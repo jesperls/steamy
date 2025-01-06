@@ -36,7 +36,6 @@ class UserUpdate(BaseModel):
 
 
 class UserPicture(BaseModel):
-    id: int
     user_id: int
     picture_url: str
     is_profile_picture: bool

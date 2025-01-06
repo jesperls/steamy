@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import '../services/api_service.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class ChatScreen extends StatefulWidget {
   final String matchedUserName; // Name
@@ -20,21 +21,33 @@ class ChatScreen extends StatefulWidget {
 class _ChatScreenState extends State<ChatScreen> {
   final TextEditingController _messageController = TextEditingController();
   final List<Map<String, String>> _messages = [];
+  final ApiService apiService = ApiService();
+  int _currentUserId = 0;
 
   @override
   void initState() {
     super.initState();
+    apiService.ensureLoggedIn(context);
+    _loadCurrentUserId();
     _fetchMessages();
+  }
+
+  Future<void> _loadCurrentUserId() async {
+    final prefs = await SharedPreferences.getInstance();
+    _currentUserId = int.tryParse(prefs.getString('userId') ?? '') ?? 0;
   }
 
   Future<void> _fetchMessages() async {
     try {
-      final fetchedMessages = await ApiService().fetchChatMessages(1, widget.matchedUserId);
+      final fetchedMessages = await apiService.fetchChatMessages(widget.matchedUserId);
       setState(() {
         _messages.clear();
         for (var msg in fetchedMessages) {
+          final senderName = (msg['sender_id'] == _currentUserId)
+            ? "You"
+            : widget.matchedUserName;
           _messages.add({
-            "sender": msg['sender_id'] == 1 ? "You" : widget.matchedUserName,
+            "sender": senderName,
             "text": msg['message_text'],
           });
         }
@@ -59,7 +72,7 @@ class _ChatScreenState extends State<ChatScreen> {
     final messageText = _messageController.text.trim();
 
     try {
-      await ApiService().sendChatMessage(widget.matchedUserId, 1, messageText);
+      await apiService.sendChatMessage(widget.matchedUserId, messageText);
       setState(() {
         _messages.add({"sender": "You", "text": messageText});
       });

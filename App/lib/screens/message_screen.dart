@@ -18,6 +18,7 @@ class _MessagePageState extends State<MessagePage> {
   List<Map<String, dynamic>> matches = [];
   List<Map<String, dynamic>> newMatches = [];
   List<Map<String, dynamic>> filteredMatches = [];
+  final ApiService apiService = ApiService();
   bool isLoading = true;
   bool hasFetched = false;
 
@@ -26,6 +27,7 @@ class _MessagePageState extends State<MessagePage> {
   @override
   void initState() {
     super.initState();
+    apiService.ensureLoggedIn(context);
     _fetchMatches();
     _searchController.addListener(_onSearchChanged);
   }
@@ -37,7 +39,7 @@ class _MessagePageState extends State<MessagePage> {
     });
 
     try {
-      final data = await ApiService().fetchMatches("1"); // Example userId
+      final data = await apiService.fetchMatches();
       setState(() {
         print(data);
         matches = data.map((m) {
@@ -46,7 +48,7 @@ class _MessagePageState extends State<MessagePage> {
             "name": m['display_name'] ?? 'Unknown',
             "image": (m['pictures']?.isNotEmpty ?? false)
                 ? m['pictures'][0]['picture_url']
-                : 'https://placecats.com/neo_2/300/200',
+                : '',
           };
         }).toList();
         newMatches = matches.take(5).toList();

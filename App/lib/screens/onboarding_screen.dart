@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
 
 class OnboardingScreen extends StatefulWidget {
   const OnboardingScreen({super.key});
@@ -15,11 +16,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   // Controllers for email and password
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
-
-  // Backend login endpoint
-  final String loginEndpoint =
-      "http://127.0.0.1:8000/login"; // Update IP if needed
-
+  final ApiService apiService = ApiService();
 
   @override
   Widget build(BuildContext context) {
@@ -208,11 +205,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
           ),
           child: TextButton(
             onPressed: () async {
-              // Fetch the entered email and password
               final email = emailController.text.trim();
               final password = passwordController.text.trim();
 
-              // Validate fields
               if (email.isEmpty || password.isEmpty) {
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
@@ -221,28 +216,16 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 return;
               }
 
-              // Send login request to the backend
               try {
-                final response = await http.post(
-                  Uri.parse(loginEndpoint),
-                  headers: <String, String>{'Content-Type': 'application/json'},
-                  body: jsonEncode(<String, String>{
-                    'email': email,
-                    'password': password,
-                  }),
-                );
-
-                if (response.statusCode == 200) {
-                  // Login successful, navigate to the message page
-                  Navigator.pushNamed(context, '/message-screen');
+                final response = await apiService.loginUser(email, password);
+                if (response['id'] != null) {
+                  Navigator.pushReplacementNamed(context, '/message-screen');
                 } else {
-                  // Invalid credentials
                   ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Login failed: ${response.body}')),
+                    SnackBar(content: Text('Login failed')),
                   );
                 }
               } catch (e) {
-                // Handle connection error
                 ScaffoldMessenger.of(context).showSnackBar(
                   const SnackBar(
                       content: Text('Error connecting to the server')),

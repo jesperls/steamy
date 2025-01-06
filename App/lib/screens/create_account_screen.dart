@@ -18,6 +18,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController rePasswordController = TextEditingController();
+  final ApiService apiService = ApiService();
 
   @override
   Widget build(BuildContext context) {
@@ -219,18 +220,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 }
 
                 try {
-                  final responseBody = await ApiService().registerUser(email, password);
-                  if (responseBody['id'] != null) {
-                    Navigator.pushNamed(
-                      context,
-                      '/createAccount2',
-                      arguments: {'userId': responseBody['id'].toString()},
-                    );
-                  } else {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      const SnackBar(content: Text('Error: User ID not found in response')),
-                    );
-                  }
+                  Navigator.pushNamed(
+                    context,
+                    '/createAccount2',
+                    arguments: {"email": email, "password": password},
+                  );
                 } catch (e) {
                   ScaffoldMessenger.of(context).showSnackBar(
                     const SnackBar(content: Text('Error connecting to server')),
