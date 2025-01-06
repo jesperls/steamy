@@ -77,9 +77,11 @@ class _MessagePageState extends State<MessagePage> {
   // Navigate to the chat screen and move the match from horizontal scroll to the list
   void _navigateToChatScreen(Map<String, dynamic> user) {
     setState(() {
-      // Remove match from newMatches and add to filteredMatches
+      // Remove match from newMatches
       newMatches.remove(user);
-      filteredMatches.add(user);
+      if (!filteredMatches.any((match) => match['id'] == user['id'])) {
+        filteredMatches.add(user);
+      }
     });
 
     Navigator.push(
