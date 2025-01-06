@@ -194,17 +194,18 @@ def get_messages(db: Session, message: schemas.MessageGet):
         .filter(
             or_(
                 or_(
+                    models.Match.id == message.user_id_2,
                     models.Match.user_id_1 == message.user_id_1,
-                    models.Match.user_id_2 == message.user_id_2,
                 ),
                 or_(
-                    models.Match.user_id_1 == message.user_id_2,
-                    models.Match.user_id_2 == message.user_id_1,
+                    models.Match.id == message.user_id_2,
+                    models.Match.user_id_2 == message.user_id_2,
                 ),
             )
         )
         .first()
     )
+    print(match)
     if not match:
         return []
     return match.messages
