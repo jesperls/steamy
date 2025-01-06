@@ -39,14 +39,14 @@ class _MessagePageState extends State<MessagePage> {
       // Fetch the data from the API
       final response = await http
           .post(
-            Uri.parse('http://10.0.2.2:8000/getMatches'),
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json',
-            },
-            body: jsonEncode({'user_id': "1"}), // Assume user_id is "1"
-          )
-          .timeout(const Duration(seconds: 5)); // Timeout after 5 seconds
+        Uri.parse('http://127.0.0.1:8000/getMatches'),
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: jsonEncode({'user_id': "1"}), // Replace with the actual user ID
+      )
+          .timeout(const Duration(seconds: 10)); // Timeout after 10 seconds
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -174,7 +174,7 @@ class _MessagePageState extends State<MessagePage> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           _buildIcon(Icons.person, () {
-                            Navigator.pushNamed(context, '/createAccount2');
+                            Navigator.pushNamed(context, '/matching_page');
                           }), // Left icon
                           const Text(
                             'Message',
@@ -187,7 +187,7 @@ class _MessagePageState extends State<MessagePage> {
                           Stack(
                             children: [
                               _buildIcon(Icons.chat_bubble, () {
-                                Navigator.pushNamed(context, '/message-screen');
+                                Navigator.pushNamed(context, '/matching_page');
                               }),
                               const Positioned(
                                 top: 20,
