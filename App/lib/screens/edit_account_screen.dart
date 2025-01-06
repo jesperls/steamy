@@ -14,9 +14,6 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
 
   final TextEditingController displayNameController = TextEditingController();
   final TextEditingController bioController = TextEditingController();
-  // Add other controllers as needed
-
-  // Add dropdown state variables
   String? selectedInterest;
   String? selectedLookingFor;
 
@@ -42,7 +39,6 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
       final response = await apiService.getUserProfile(int.parse(userId));
       displayNameController.text = response['display_name'] ?? '';
       bioController.text = response['bio'] ?? '';
-      // Initialize other fields as needed
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Failed to load user data: $e')),
@@ -59,7 +55,6 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
     final bio = bioController.text.trim();
     final interest = selectedInterest;
     final lookingFor = selectedLookingFor;
-    // Get other fields as needed
 
     if (displayName.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -68,7 +63,6 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
       return;
     }
 
-    // Optionally, validate that dropdowns are selected
     if (interest == null || lookingFor == null) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
@@ -89,10 +83,6 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
         int.parse(userId),
         displayName: displayName,
         bio: bio,
-        // Include the new dropdown selections if necessary
-        // For example:
-        // interests: interest,
-        // lookingFor: lookingFor,
       );
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Profile updated successfully')),
@@ -186,8 +176,6 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
               },
             ),
             const SizedBox(height: 20),
-
-            // Add more fields as needed
 
             // Update Button
             Center(

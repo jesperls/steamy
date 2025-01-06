@@ -12,6 +12,7 @@ SessionLocal = scoped_session(
     sessionmaker(autocommit=False, autoflush=False, bind=engine)
 )
 
+
 def init_db():
     db: Session = SessionLocal()
     try:
@@ -19,7 +20,9 @@ def init_db():
         tables = inspector.get_table_names()
         if not tables:
             Base.metadata.create_all(bind=engine)
-            sql_file_path = os.path.join(os.path.dirname(__file__), 'Database', 'test_data.sql')
+            sql_file_path = os.path.join(
+                os.path.dirname(__file__), "Database", "test_data.sql"
+            )
             load_sql_file(db, sql_file_path)
         else:
             Base.metadata.create_all(bind=engine)
@@ -28,13 +31,14 @@ def init_db():
 
 
 def load_sql_file(db: Session, file_path: str):
-    with open(file_path, 'r') as file:
+    with open(file_path, "r") as file:
         sql = file.read()
-    statements = sql.strip().split(';')
+    statements = sql.strip().split(";")
     for statement in statements:
         if statement.strip():
             db.execute(text(statement))
     db.commit()
+
 
 def get_db():
     db = SessionLocal()

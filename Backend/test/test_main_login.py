@@ -16,6 +16,7 @@ DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 @pytest.fixture(scope="function")
 def test_db():
     Base.metadata.create_all(bind=engine)
@@ -43,42 +44,62 @@ def client(test_db):
 def mock_db_session():
     return mock.Mock()
 
+
 @pytest.mark.unit
 def test_login_success(mock_db_session):
-    mock_credentials = UserLogin(email="devnull@darkrage.com", password="securepassword")
-    mock_user = mock.Mock(email=mock_credentials.email, password_hash=pwd_context.hash(mock_credentials.password))
+    mock_credentials = UserLogin(
+        email="devnull@darkrage.com", password="securepassword"
+    )
+    mock_user = mock.Mock(
+        email=mock_credentials.email,
+        password_hash=pwd_context.hash(mock_credentials.password),
+    )
 
     with mock.patch("crud.get_user_by_email", return_value=mock_user) as mock_get_user:
         result = login(user=mock_credentials, db=mock_db_session)
 
         assert result == mock_user
-        mock_get_user.assert_called_once_with(mock_db_session, email=mock_credentials.email)
+        mock_get_user.assert_called_once_with(
+            mock_db_session, email=mock_credentials.email
+        )
 
 
 @pytest.mark.unit
 def test_login_invalid_credentials(mock_db_session):
     mock_credentials = UserLogin(email="devnull@darkrage.com", password="wrongpassword")
 
-    with mock.patch("crud.authenticate_user", return_value=None) as mock_authenticate_user:
+    with mock.patch(
+        "crud.authenticate_user", return_value=None
+    ) as mock_authenticate_user:
         with pytest.raises(HTTPException) as excinfo:
             login(user=mock_credentials, db=mock_db_session)
 
         assert excinfo.value.status_code == 400
         assert excinfo.value.detail == "Invalid credentials"
-        mock_authenticate_user.assert_called_once_with(db=mock_db_session, credentials=mock_credentials)
+        mock_authenticate_user.assert_called_once_with(
+            db=mock_db_session, credentials=mock_credentials
+        )
+
 
 @pytest.mark.unit
 def test_login_database_error(mock_db_session):
-    mock_credentials = UserLogin(email="devnull@darkrage.com", password="securepassword")
+    mock_credentials = UserLogin(
+        email="devnull@darkrage.com", password="securepassword"
+    )
 
-    with mock.patch("crud.authenticate_user", side_effect=Exception("Database failure")) as mock_authenticate_user:
+    with mock.patch(
+        "crud.authenticate_user", side_effect=Exception("Database failure")
+    ) as mock_authenticate_user:
         with pytest.raises(Exception) as excinfo:
             login(user=mock_credentials, db=mock_db_session)
 
         assert str(excinfo.value) == "Database failure"
-        mock_authenticate_user.assert_called_once_with(db=mock_db_session, credentials=mock_credentials)
+        mock_authenticate_user.assert_called_once_with(
+            db=mock_db_session, credentials=mock_credentials
+        )
 
-# INVALID CREDS FIX 
+
+# INVALID CREDS FIX
 @pytest.mark.integration
 def test_login_success_fetch(client, test_db):
     test_password = "securepassword"

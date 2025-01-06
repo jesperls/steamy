@@ -13,6 +13,7 @@ DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 @pytest.fixture(scope="function")
 def test_db():
     Base.metadata.create_all(bind=engine)
@@ -24,6 +25,7 @@ def test_db():
         Base.metadata.drop_all(bind=engine)
         Base.metadata.create_all(bind=engine)
 
+
 @pytest.fixture(scope="function")
 def client(test_db):
     def override_get_db():
@@ -33,10 +35,12 @@ def client(test_db):
     with TestClient(app) as c:
         yield c
 
+
 @pytest.mark.unit
 @pytest.fixture
 def mock_db_session():
     return mock.Mock()
+
 
 @pytest.mark.unit
 def test_update_profile_success(mock_db_session):
@@ -50,8 +54,11 @@ def test_update_profile_success(mock_db_session):
         location_lon=25.0,
     )
     mock_db_user = mock.Mock()
-    with mock.patch("crud.get_user_by_id", return_value=mock_db_user) as mock_get_user, \
-         mock.patch("crud.update_user", return_value=mock_db_user) as mock_update_user:
+    with mock.patch(
+        "crud.get_user_by_id", return_value=mock_db_user
+    ) as mock_get_user, mock.patch(
+        "crud.update_user", return_value=mock_db_user
+    ) as mock_update_user:
         result = update_profile(user=mock_user_update, db=mock_db_session)
 
         assert result == mock_db_user
@@ -59,6 +66,7 @@ def test_update_profile_success(mock_db_session):
         mock_update_user.assert_called_once_with(
             db=mock_db_session, db_user=mock_db_user, user=mock_user_update
         )
+
 
 @pytest.mark.unit
 def test_update_profile_user_not_found(mock_db_session):
@@ -71,10 +79,13 @@ def test_update_profile_user_not_found(mock_db_session):
         assert excinfo.value.detail == "User not found"
         mock_get_user.assert_called_once_with(mock_db_session, id=mock_user_update.id)
 
+
 @pytest.mark.unit
 def test_update_profile_database_failure(mock_db_session):
     mock_user_update = UserUpdate(id=1)
-    with mock.patch("crud.get_user_by_id", side_effect=Exception("Database failure")) as mock_get_user:
+    with mock.patch(
+        "crud.get_user_by_id", side_effect=Exception("Database failure")
+    ) as mock_get_user:
         with pytest.raises(Exception) as excinfo:
             update_profile(user=mock_user_update, db=mock_db_session)
 
@@ -123,6 +134,7 @@ def test_update_profile_success_integration(client, test_db):
     assert response_data["preferences"] == updated_user["preferences"]
     assert response_data["location_lat"] == updated_user["location_lat"]
     assert response_data["location_lon"] == updated_user["location_lon"]
+
 
 @pytest.mark.integration
 def test_update_profile_user_not_found_integration(client):

@@ -57,16 +57,15 @@ def update_user(db: Session, db_user: models.User, user: schemas.UserUpdate):
 
 def get_next_match(db: Session, user_action: schemas.UserAction):
     # Get the current user
-    current_user = db.query(models.User).filter(models.User.id == user_action.user_id).first()
+    current_user = (
+        db.query(models.User).filter(models.User.id == user_action.user_id).first()
+    )
     if not current_user:
         return None
 
     # Get all previous matches to exclude
-    previous_matches = (
-        db.query(models.Match)
-        .filter(
-            models.Match.user_id_1 == user_action.user_id
-        )
+    previous_matches = db.query(models.Match).filter(
+        models.Match.user_id_1 == user_action.user_id
     )
     excluded_user_ids = set()
     for match in previous_matches:
@@ -79,7 +78,7 @@ def get_next_match(db: Session, user_action: schemas.UserAction):
         .filter(
             and_(
                 models.User.id != user_action.user_id,
-                ~models.User.id.in_(excluded_user_ids)
+                ~models.User.id.in_(excluded_user_ids),
             )
         )
         .order_by(func.random())
@@ -174,14 +173,18 @@ def get_matches(db: Session, user_action: schemas.UserAction):
             other_user_id = m.user_id_1
         other_user = get_user_by_id(db, other_user_id)
         if m.is_matched:
-            results.append({
-                "id": m.id,
-                "is_matched": m.is_matched,
-                "user_id_1": m.user_id_1,
-                "user_id_2": m.user_id_2,
-                "display_name": other_user.display_name,
-                "pictures": [{"picture_url": p.picture_url} for p in other_user.pictures]
-            })
+            results.append(
+                {
+                    "id": m.id,
+                    "is_matched": m.is_matched,
+                    "user_id_1": m.user_id_1,
+                    "user_id_2": m.user_id_2,
+                    "display_name": other_user.display_name,
+                    "pictures": [
+                        {"picture_url": p.picture_url} for p in other_user.pictures
+                    ],
+                }
+            )
     return results
 
 

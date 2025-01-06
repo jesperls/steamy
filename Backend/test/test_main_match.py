@@ -13,6 +13,7 @@ DATABASE_URL = "sqlite:///./test.db"
 engine = create_engine(DATABASE_URL)
 TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
+
 @pytest.fixture(scope="function")
 def test_db():
     Base.metadata.create_all(bind=engine)
@@ -24,6 +25,7 @@ def test_db():
         Base.metadata.drop_all(bind=engine)
         Base.metadata.create_all(bind=engine)
 
+
 @pytest.fixture(scope="function")
 def client(test_db):
     def override_get_db():
@@ -33,10 +35,12 @@ def client(test_db):
     with TestClient(app) as c:
         yield c
 
+
 @pytest.mark.unit
 @pytest.fixture
 def mock_db_session():
     return mock.Mock()
+
 
 @pytest.mark.unit
 def test_match_users_success(mock_db_session):
@@ -46,22 +50,30 @@ def test_match_users_success(mock_db_session):
         result = match_users(action=mock_action, db=mock_db_session)
         assert result["message"] == "Match request sent."
 
+
 @pytest.mark.unit
 def test_match_users_already_initiated(mock_db_session):
     mock_action = MatchAction(matcher_id=1, matched_id=2)
-    with mock.patch("crud.create_or_update_match", return_value={"error": "Match already initiated."}):
+    with mock.patch(
+        "crud.create_or_update_match",
+        return_value={"error": "Match already initiated."},
+    ):
         with pytest.raises(HTTPException) as excinfo:
             match_users(action=mock_action, db=mock_db_session)
         assert excinfo.value.status_code == 400
         assert excinfo.value.detail == "Match already initiated."
 
+
 @pytest.mark.unit
 def test_match_users_database_failure(mock_db_session):
     mock_action = MatchAction(matcher_id=1, matched_id=2)
-    with mock.patch("crud.create_or_update_match", side_effect=Exception("Database failure")):
+    with mock.patch(
+        "crud.create_or_update_match", side_effect=Exception("Database failure")
+    ):
         with pytest.raises(Exception) as excinfo:
             match_users(action=mock_action, db=mock_db_session)
         assert str(excinfo.value) == "Database failure"
+
 
 @pytest.mark.integration
 def test_match_users_create_new_match_integration(client, test_db):
@@ -71,6 +83,7 @@ def test_match_users_create_new_match_integration(client, test_db):
     assert response.status_code == 200
     response_data = response.json()
     assert response_data["message"] == "Match request sent."
+
 
 # Assertion error
 @pytest.mark.integration
@@ -90,6 +103,7 @@ def test_match_users_mutual_match_integration(client, test_db):
     assert response.status_code == 200
     response_data = response.json()
     assert response_data["message"] == "It's a mutual match!"
+
 
 # Assertion error
 @pytest.mark.integration

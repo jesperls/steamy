@@ -42,7 +42,9 @@ def register(user: UserCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="Email already registered")
     user = crud.create_user(db=db, user=user)
     user_id = user.id
-    picture = UserPicture(user_id=user_id, picture_url="default.jpg", is_profile_picture=True)
+    picture = UserPicture(
+        user_id=user_id, picture_url="default.jpg", is_profile_picture=True
+    )
     crud.upload_picture(db=db, picture=picture)
     return {"message": "User registered successfully", "id": user_id}
 
@@ -114,6 +116,7 @@ def get_matches(action: UserAction, db: Session = Depends(get_db)):
 def get_messages(message: MessageGet, db: Session = Depends(get_db)):
     return crud.get_messages(db=db, message=message)
 
+
 # Get an image from the backend with filename from request parameter
 @app.get("/getImage/{filename}")
 def get_image(filename: str):
@@ -122,4 +125,5 @@ def get_image(filename: str):
 
 if __name__ == "__main__":
     import uvicorn
+
     uvicorn.run(app, host="0.0.0.0", port=8000)
