@@ -6,6 +6,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
 
 class MatchPage extends StatefulWidget {
   const MatchPage({super.key});
@@ -16,34 +17,32 @@ class MatchPage extends StatefulWidget {
 
 class _MatchPageState extends State<MatchPage> {
   bool isLoading = false;
-  Future<void> _fetchMatches() async {
+  List<Map<String, dynamic>> discoveredUsers = [];
+  final int preloadThreshold = 2; // Preload when 2 or fewer cards remain
+
+  @override
+  void initState() {
+    super.initState();
+    _loadInitialMatches();
+  }
+
+  Future<void> _loadInitialMatches() async {
     setState(() {
       isLoading = true;
     });
 
     try {
-      final response = await http.post(
-        Uri.parse('http://10.0.2.2:8000/match'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body:
-        jsonEncode({"user_id": "1", "matched_id": "7", "matcher_id": "3"}),
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        log(data.toString());
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text("Match request sent")),
-        );
-      } else {}
+      // Load first 2 matches
+      for (int i = 0; i <= 2; i++) {
+        final match = await ApiService().fetchNextMatch("1");
+        if (match != null) {
+          discoveredUsers.add(match);
+        }
+      }
     } catch (error) {
       log(error.toString());
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text('Error loading matches: $error')),
+        SnackBar(content: Text('Error loading initial matches: $error')),
       );
     }
 
@@ -52,31 +51,53 @@ class _MatchPageState extends State<MatchPage> {
     });
   }
 
+  Future<void> _preloadNextMatch() async {
+    try {
+      final match = await ApiService().fetchNextMatch("1");
+      if (match != null) {
+        setState(() {
+          discoveredUsers.add(match); // This naturally adds to the end of the list
+        });
+      }
+    } catch (error) {
+      log(error.toString());
+    }
+  }
+
+  Future<bool> _onSwipe(int index, int? secondaryIndex, CardSwiperDirection direction) async {
+    if (index < 0 || index >= discoveredUsers.length) return false;
+
+    final swipedUser = discoveredUsers[index];
+
+    try {
+      if (direction == CardSwiperDirection.right) {
+        await ApiService().sendMatchRequest("1", swipedUser['id'].toString());
+      }
+
+      // Remove the swiped card
+      setState(() {
+        discoveredUsers.removeAt(index);
+      });
+
+      // Preload next match if we're running low
+      if (discoveredUsers.length <= preloadThreshold) {
+        await _preloadNextMatch();
+      }
+
+      return true;
+    } catch (error) {
+      log(error.toString());
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Error processing swipe: $error')),
+      );
+      return false;
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
     final screenHeight = MediaQuery.of(context).size.height;
-
-    const List<Map<String, String>> sampleData = [
-      {
-        'image':
-        'https://img.freepik.com/free-photo/portrait-happy-smiling-woman-standing-square-sunny-summer-spring-day-outside-cute-smiling-woman-looking-you-attractive-young-girl-enjoying-summer-filtered-image-flare-sunshine_231208-6734.jpg?semt=ais_hybrid',
-        'username': '@AnnaLarsson',
-        'fullName': 'Anna Larsson',
-      },
-      {
-        'image':
-        'https://image.tensorartassets.com/cdn-cgi/image/w=600/posts/images/693605929739983953/5df558af-e772-4ee9-a5de-4a28df8bd48e.jpg',
-        'username': '@JohnDoe',
-        'fullName': 'John Doe',
-      },
-      {
-        'image':
-        'https://plus.unsplash.com/premium_photo-1665663927708-e3287b105c44?fm=jpg&q=60&w=3000&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YW1lcmljYW4lMjBnaXJsfGVufDB8fDB8fHww',
-        'username': '@EmilySmith',
-        'fullName': 'Emily Smith',
-      },
-    ];
 
     return Scaffold(
       backgroundColor: Colors.white, // White background color
@@ -87,7 +108,7 @@ class _MatchPageState extends State<MatchPage> {
             // Header Section with Navigation and Title
             Padding(
               padding:
-              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -121,7 +142,7 @@ class _MatchPageState extends State<MatchPage> {
             // "Near You" Section
             Padding(
               padding:
-              const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
+                  const EdgeInsets.symmetric(horizontal: 20.0, vertical: 10.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -153,19 +174,35 @@ class _MatchPageState extends State<MatchPage> {
             // User Card Section
             Expanded(
               child: Center(
-                child: CardSwiper(
-                  cardBuilder: (context, index, horizontalOffsetPercentage,
-                      verticalOffsetPercentage) {
-                    final user = sampleData[index];
-                    return _buildUserCard(screenWidth, screenHeight,
-                        user['image']!, user['username']!, user['fullName']!);
-                  },
-                  cardsCount: sampleData.length,
-                  allowedSwipeDirection: const AllowedSwipeDirection.only(
-                      up: false, down: false, left: true, right: true),
-                ),
+                child: isLoading
+                    ? const CircularProgressIndicator()
+                    : discoveredUsers.isEmpty
+                        ? const Text('No more matches available')
+                        : CardSwiper(
+                            cardBuilder: (context, index,
+                                horizontalOffsetPercentage,
+                                verticalOffsetPercentage) {
+                              final user = discoveredUsers[index];
+                              return _buildUserCard(
+                                screenWidth,
+                                screenHeight,
+                                user['profile_picture'] ?? '',
+                                user['display_name'] ?? 'Anonymous',
+                                user['full_name'] ?? 'Unknown',
+                              );
+                            },
+                            cardsCount: discoveredUsers.length,
+                            onSwipe: _onSwipe,
+                            allowedSwipeDirection:
+                                const AllowedSwipeDirection.only(
+                                    up: false,
+                                    down: false,
+                                    left: true,
+                                    right: true),
+                          ),
               ),
             ),
+
             // "Match" Button
             Padding(
               padding:
@@ -206,12 +243,12 @@ class _MatchPageState extends State<MatchPage> {
 
   /// Builds the user card
   Widget _buildUserCard(
-      double screenWidth,
-      double screenHeight,
-      String imageUrl,
-      String username,
-      String fullName,
-      ) {
+    double screenWidth,
+    double screenHeight,
+    String imageUrl,
+    String username,
+    String fullName,
+  ) {
     return Center(
       child: Container(
         width: screenWidth * 0.85,
@@ -263,23 +300,6 @@ class _MatchPageState extends State<MatchPage> {
                       ),
                     ),
                     const SizedBox(height: 10),
-                    ElevatedButton(
-                      onPressed: () {
-                        // Handle "Follow" button tap
-                      },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black.withOpacity(0.6),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                      ),
-                      child: const Text(
-                        'Follow',
-                        style: TextStyle(
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
                   ],
                 ),
               ),
@@ -290,7 +310,7 @@ class _MatchPageState extends State<MatchPage> {
     );
   }
 
-  /// Builds the "Match" button
+  // Builds the "Match" button
   Widget _buildMatchButton(BuildContext context) {
     return Container(
       width: double.infinity,
@@ -307,7 +327,7 @@ class _MatchPageState extends State<MatchPage> {
         ),
       ),
       child: ElevatedButton(
-        onPressed: () => _fetchMatches(),
+        onPressed: () => (),
         style: ElevatedButton.styleFrom(
           backgroundColor: Colors.transparent,
           shadowColor: Colors.transparent,

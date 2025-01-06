@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -17,9 +18,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController rePasswordController = TextEditingController();
-
-  // API Endpoint
-  final String registerEndpoint = "http://127.0.0.1:8000/register"; // Replace with actual IP if needed
 
   @override
   Widget build(BuildContext context) {
@@ -221,33 +219,16 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 }
 
                 try {
-                  final response = await http.post(
-                    Uri.parse(registerEndpoint),
-                    headers: <String, String>{'Content-Type': 'application/json'},
-                    body: jsonEncode(<String, String>{
-                      'email': email,
-                      'password': password,
-                      'display_name': 'User',
-                    }),
-                  );
-
-                  if (response.statusCode == 200) {
-                    final responseBody = jsonDecode(response.body);
-
-                    if (responseBody['id'] != null) {
-                      Navigator.pushNamed(
-                        context,
-                        '/createAccount2',
-                        arguments: {'userId': responseBody['id'].toString()},
-                      );
-                    } else {
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(content: Text('Error: User ID not found in response')),
-                      );
-                    }
+                  final responseBody = await ApiService().registerUser(email, password);
+                  if (responseBody['id'] != null) {
+                    Navigator.pushNamed(
+                      context,
+                      '/createAccount2',
+                      arguments: {'userId': responseBody['id'].toString()},
+                    );
                   } else {
                     ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(content: Text('Error: ${response.body}')),
+                      const SnackBar(content: Text('Error: User ID not found in response')),
                     );
                   }
                 } catch (e) {

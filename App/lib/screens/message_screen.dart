@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 import 'chat_screen.dart';
+import '../services/api_service.dart';
 
 class MessagePage extends StatefulWidget {
   const MessagePage({super.key});
@@ -36,56 +37,20 @@ class _MessagePageState extends State<MessagePage> {
     });
 
     try {
-      // Fetch the data from the API
-      final response = await http
-          .post(
-        Uri.parse('http://127.0.0.1:8000/getMatches'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({'user_id': "1"}), // Replace with the actual user ID
-      )
-          .timeout(const Duration(seconds: 10)); // Timeout after 10 seconds
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-
-        if (data is List && data.isNotEmpty) {
-          setState(() {
-            // Retain the original data transformation logic
-            matches = List<Map<String, dynamic>>.from(
-              data.map(
-                (item) => {
-                  "id": item["id"].toString(),
-                  "user_id_1": item["user_id_1"].toString(),
-                  "user_id_2": item["user_id_2"].toString(),
-                  "match_score": item["match_score"].toString(),
-                  "is_matched": item["is_matched"]?.toString() ?? "false",
-                  "created_at": item["created_at"] ?? "N/A",
-                  "updated_at": item["updated_at"] ?? "N/A",
-                  "name": "Emily", // Placeholder name
-                  "image":
-                      "https://img.freepik.com/free-photo/portrait-happy-smiling-woman-standing-square-sunny-summer-spring-day-outside-cute-smiling-woman-looking-you-attractive-young-girl-enjoying-summer-filtered-image-flare-sunshine_231208-6734.jpg?semt=ais_hybrid",
-                },
-              ),
-            );
-
-            // Keep only the first 5 matches for display in the horizontal scroll
-            newMatches = matches.take(5).toList();
-          });
-        } else {
-          setState(() {
-            matches = [];
-            newMatches = [];
-          });
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text("No new matches found.")),
-          );
-        }
-      } else {
-        throw Exception("Failed to load data.");
-      }
+      final data = await ApiService().fetchMatches("1"); // Example userId
+      setState(() {
+        print(data);
+        matches = data.map((m) {
+          return {
+            "id": m['id'].toString(),
+            "name": m['display_name'] ?? 'Unknown',
+            "image": (m['pictures']?.isNotEmpty ?? false)
+                ? m['pictures'][0]['picture_url']
+                : 'https://placecats.com/neo_2/300/200',
+          };
+        }).toList();
+        newMatches = matches.take(5).toList();
+      });
     } catch (error) {
       log(error.toString());
       ScaffoldMessenger.of(context).showSnackBar(

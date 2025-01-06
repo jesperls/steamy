@@ -1,4 +1,5 @@
 from sqlalchemy.orm import Session
+from sqlalchemy.sql.expression import func
 import models, schemas
 from passlib.context import CryptContext
 from sqlalchemy import and_, or_
@@ -43,7 +44,40 @@ def update_user(db: Session, db_user: models.User, user: schemas.UserUpdate):
 
 
 def get_next_match(db: Session, user_action: schemas.UserAction):
-    return db.query(models.User).filter(models.User.id != user_action.user_id).first()
+    # Get the current user
+    current_user = db.query(models.User).filter(models.User.id == user_action.user_id).first()
+    if not current_user:
+        return None
+
+    # Get all previous matches (both ways) to exclude
+    previous_matches = (
+        db.query(models.Match)
+        .filter(
+            or_(
+                models.Match.user_id_1 == user_action.user_id,
+                models.Match.user_id_2 == user_action.user_id
+            )
+        )
+    )
+    excluded_user_ids = set()
+    for match in previous_matches:
+        excluded_user_ids.add(match.user_id_1)
+        excluded_user_ids.add(match.user_id_2)
+
+    # Query for a single potential match using order by random
+    next_match = (
+        db.query(models.User)
+        .filter(
+            and_(
+                models.User.id != user_action.user_id,
+                ~models.User.id.in_(excluded_user_ids)
+            )
+        )
+        .order_by(func.random())
+        .first()
+    )
+
+    return next_match
 
 
 def send_message(db: Session, message: schemas.MessageCreate):
@@ -53,11 +87,11 @@ def send_message(db: Session, message: schemas.MessageCreate):
             and_(
                 models.Match.is_matched == True,
                 or_(
-                    and_(
+                    or_(
                         models.Match.user_id_1 == message.sender_id,
                         models.Match.user_id_2 == message.receiver_id,
                     ),
-                    and_(
+                    or_(
                         models.Match.user_id_1 == message.receiver_id,
                         models.Match.user_id_2 == message.sender_id,
                     ),
@@ -118,13 +152,26 @@ def create_or_update_match(db: Session, action: schemas.MatchAction):
 
 
 def get_matches(db: Session, user_action: schemas.UserAction):
-    user = (
-        db.query(models.User)
-        .filter(models.User.id == user_action.user_id)
-        .first()
-    )
+    user = db.query(models.User).filter(models.User.id == user_action.user_id).first()
     matches = user.matches + user.matches_as_second_user
-    return matches
+
+    results = []
+    for m in matches:
+        if m.user_id_1 == user.id:
+            other_user_id = m.user_id_2
+        else:
+            other_user_id = m.user_id_1
+        other_user = get_user_by_id(db, other_user_id)
+        if m.is_matched:
+            results.append({
+                "id": m.id,
+                "is_matched": m.is_matched,
+                "user_id_1": m.user_id_1,
+                "user_id_2": m.user_id_2,
+                "display_name": other_user.display_name,
+                "pictures": [{"picture_url": p.picture_url} for p in other_user.pictures]
+            })
+    return results
 
 
 def get_messages(db: Session, message: schemas.MessageGet):
@@ -132,11 +179,11 @@ def get_messages(db: Session, message: schemas.MessageGet):
         db.query(models.Match)
         .filter(
             or_(
-                and_(
+                or_(
                     models.Match.user_id_1 == message.user_id_1,
                     models.Match.user_id_2 == message.user_id_2,
                 ),
-                and_(
+                or_(
                     models.Match.user_id_1 == message.user_id_2,
                     models.Match.user_id_2 == message.user_id_1,
                 ),

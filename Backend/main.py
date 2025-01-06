@@ -107,3 +107,7 @@ def get_matches(action: UserAction, db: Session = Depends(get_db)):
 @app.post("/getMessages")
 def get_messages(message: MessageGet, db: Session = Depends(get_db)):
     return crud.get_messages(db=db, message=message)
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)
