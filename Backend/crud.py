@@ -116,7 +116,7 @@ def send_message(db: Session, message: schemas.MessageCreate):
         }
 
     db_message = models.Message(
-        match_id=match.id,
+        match_id=message.receiver_id,
         sender_id=message.sender_id,
         message_text=message.message_text,
     )
@@ -196,13 +196,13 @@ def get_messages(db: Session, message: schemas.MessageGet):
         db.query(models.Match)
         .filter(
             or_(
-                or_(
+                and_(
                     models.Match.id == message.user_id_2,
                     models.Match.user_id_1 == message.user_id_1,
                 ),
-                or_(
+                and_(
                     models.Match.id == message.user_id_2,
-                    models.Match.user_id_2 == message.user_id_2,
+                    models.Match.user_id_2 == message.user_id_1,
                 ),
             )
         )
