@@ -13,7 +13,8 @@ INSERT INTO users (email, display_name, password_hash, bio, preferences, locatio
 ('Louise@darkrage.com', 'Louise', 'hashed_password3', 'I dance with variables.', NULL, 59.049190, 15.039311),
 ('Carla@darkrage.com', 'Carla', 'hashed_password3', 'Bugs fear my code.', NULL, 62.198164, 14.641629),
 ('Irene@darkrage.com', 'Irene', 'hashed_password3', 'Records spin my thoughts.', NULL, 59.703247, 14.187016),
-('Errol@darkrage.com', 'Errol', 'hashed_password3', 'I chase moose sightings.', NULL, 66.008841, 17.981998);
+('Errol@darkrage.com', 'Errol', 'hashed_password3', 'I chase moose sightings.', NULL, 66.008841, 17.981998),
+('tester@tester.com', 'Tester', '$2b$12$wris9R1LA8Qd5/74oOMg1uU2nbVLv2UqaYEqM1pg3t2uDhoZlj8Lm', 'Testing account.', NULL, 62.008841, 16.981998);
 
 INSERT INTO user_pictures (user_id, picture_url, is_profile_picture) VALUES
 (1, '1.jpg', TRUE),
@@ -59,9 +60,12 @@ INSERT INTO user_interests (user_id, interest) VALUES
 INSERT INTO matches (user_id_1, user_id_2, match_score, is_matched) VALUES
 (1, 2, 1, TRUE),
 (3, 1, 1, FALSE),
-(3, 2, 0, FALSE);
+(3, 2, 0, FALSE),
+(16, 6, 1, TRUE);
 
 INSERT INTO messages (match_id, sender_id, message_text) VALUES
 (1, 1, 'Grr'),
 (1, 2, 'Grrr'),
-(1, 1, 'Grrrr');
+(1, 1, 'Grrrr'),
+(4, 6, 'Hello!'),
+(4, 16, 'Hi! How are you?');
