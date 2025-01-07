@@ -181,7 +181,7 @@ class _MatchPageState extends State<MatchPage> {
                                         ''),
                                 user['match']['display_name'] +
                                         ' Score: ' +
-                                        user['score']?.toString() ??
+                                        user['score']?.toStringAsFixed(1) ??
                                     'Anonymous',
                                 user['match']['bio'] ?? 'Unknown',
                               );
