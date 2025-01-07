@@ -141,10 +141,14 @@ def create_or_update_match(db: Session, action: schemas.MatchAction):
         db.query(models.Match)
         .filter(
             or_(
-                (models.Match.user_id_1 == action.matched_id)
-                & (models.Match.user_id_2 == action.matcher_id),
-                (models.Match.user_id_1 == action.matcher_id)
-                & (models.Match.is_matched == True),
+                and_(
+                    (models.Match.user_id_1 == action.matched_id),
+                    (models.Match.user_id_2 == action.matcher_id)
+                ),
+                and_(
+                    (models.Match.user_id_1 == action.matcher_id),
+                    (models.Match.user_id_2 == action.matched_id)
+                )
             )
         )
         .first()
