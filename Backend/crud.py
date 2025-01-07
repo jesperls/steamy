@@ -259,4 +259,4 @@ def calculate_match_score(user1: models.User, user2: models.User) -> float:
         lon_diff = user1.location_lon - user2.location_lon
         distance = math.sqrt(lat_diff**2 + lon_diff**2)
         score -= distance
-    return int(score) + 1000
+    return round(float(score), 1) + 100
