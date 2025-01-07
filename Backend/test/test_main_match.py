@@ -77,15 +77,13 @@ def test_match_users_database_failure(mock_db_session):
 
 @pytest.mark.integration
 def test_match_users_create_new_match_integration(client, test_db):
-    action_data = {"matcher_id": 1, "matched_id": 2}
+    action_data = {"matcher_id": 12, "matched_id": 13}
     response = client.post("/match", json=action_data)
 
     assert response.status_code == 200
     response_data = response.json()
     assert response_data["message"] == "Match request sent."
 
-
-# Assertion error
 @pytest.mark.integration
 def test_match_users_mutual_match_integration(client, test_db):
     test_match = {"id": 1, "user_id_1": 2, "user_id_2": 1, "is_matched": False}
@@ -104,8 +102,6 @@ def test_match_users_mutual_match_integration(client, test_db):
     response_data = response.json()
     assert response_data["message"] == "It's a mutual match!"
 
-
-# Assertion error
 @pytest.mark.integration
 def test_match_users_already_initiated_integration(client, test_db):
     test_match = {"id": 2, "user_id_1": 3, "user_id_2": 4, "is_matched": False}

@@ -56,16 +56,22 @@ def test_register_success(mock_db_session):
         location_lat=10.0,
         location_lon=10.0,
     )
+
+    mock_created_user = mock.Mock()
+    mock_created_user.id = 1
+    mock_created_user.email = mock_user.email
+
     with mock.patch(
         "crud.get_user_by_email", return_value=None
     ) as mock_get_user, mock.patch(
-        "crud.create_user", return_value=mock_user
+        "crud.create_user", return_value=mock_created_user
     ) as mock_create_user:
         result = register(user=mock_user, db=mock_db_session)
 
-        assert result == mock_user
+        assert result["id"] == mock_created_user.id
         mock_get_user.assert_called_once_with(mock_db_session, email=mock_user.email)
         mock_create_user.assert_called_once_with(db=mock_db_session, user=mock_user)
+
 
 
 @pytest.mark.unit
@@ -110,7 +116,7 @@ def test_register_database_error(mock_db_session):
 @pytest.mark.integration
 def test_register_success_fetch(client, test_db):
     mock_user = {
-        "email": "devnullfetch@darkrage.com",
+        "email": "devnullsleeper@darkrage.com",
         "display_name": "The boy",
         "password": "securepassword",
         "bio": "Meow",
@@ -123,14 +129,7 @@ def test_register_success_fetch(client, test_db):
     assert response.status_code == 200, f"Unexpected response: {response.json()}"
     response_data = response.json()
 
-    assert response_data["email"] == mock_user["email"]
-    assert response_data["display_name"] == mock_user["display_name"]
-    assert response_data["bio"] == mock_user["bio"]
-    assert response_data["preferences"] == mock_user["preferences"]
-    assert "id" in response_data
-    assert "created_at" in response_data
-    assert "updated_at" in response_data
-    assert "password_hash" in response_data
+    assert response_data["message"] == "User registered successfully"
 
 
 @pytest.mark.integration

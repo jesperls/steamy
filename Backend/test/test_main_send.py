@@ -107,7 +107,7 @@ def test_send_message_success_integration(client, test_db):
 
 @pytest.mark.integration
 def test_send_message_users_not_matched_integration(client, test_db):
-    message_data = {"sender_id": 3, "receiver_id": 4, "message_text": "Steamy bra"}
+    message_data = {"sender_id": 6, "receiver_id": 7, "message_text": "Steamy bra"}
     response = client.post("/sendMessage", json=message_data)
 
     assert response.status_code == 400

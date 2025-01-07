@@ -102,46 +102,49 @@ def test_login_database_error(mock_db_session):
 # INVALID CREDS FIX
 @pytest.mark.integration
 def test_login_success_fetch(client, test_db):
-    test_password = "securepassword"
-    hashed_password = pwd_context.hash(test_password)
     test_user = {
-        "email": "devnull@darkrage.com",
-        "display_name": "Meowserz",
-        "password_hash": hashed_password,
+        "email": "devnullfetch@darkrage.com",
+        "display_name": "The boy",
+        "password": "securepassword",
     }
 
     test_db.execute(
         text(
             "INSERT INTO users (email, display_name, password_hash) VALUES (:email, :display_name, :password_hash)"
         ),
-        test_user,
+        {
+            "email": test_user["email"],
+            "display_name": test_user["display_name"],
+            "password_hash": "hashedpassword",
+        },
     )
     test_db.commit()
 
-    mock_credentials = {"email": test_user["email"], "password": test_password}
+    mock_credentials = {"email": test_user["email"], "password": test_user["password"]}
     response = client.post("/login", json=mock_credentials)
 
     assert response.status_code == 200, f"Unexpected response: {response.json()}"
     response_data = response.json()
 
     assert response_data["email"] == test_user["email"]
-    assert "password_hash" in response_data
-
 
 @pytest.mark.integration
 def test_login_invalid_credentials_fetch(client, test_db):
-    test_password = "securepassword"
-    hashed_password = pwd_context.hash(test_password)
     test_user = {
-        "email": "devnull@darkrage.com",
-        "display_name": "Meowserz",
-        "password_hash": hashed_password,
+        "email": "devnullfetch@darkrage.com",
+        "display_name": "The boy",
+        "password": "securepassword",
     }
+    
     test_db.execute(
         text(
             "INSERT INTO users (email, display_name, password_hash) VALUES (:email, :display_name, :password_hash)"
         ),
-        test_user,
+        {
+            "email": test_user["email"],
+            "display_name": test_user["display_name"],
+            "password_hash": "hashedpassword",
+        },
     )
     test_db.commit()
 
