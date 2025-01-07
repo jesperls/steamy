@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
-import '../services/api_service.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -18,15 +18,77 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController rePasswordController = TextEditingController();
-  final ApiService apiService = ApiService();
+
+  // Location data
+  double? locationLat;
+  double? locationLon;
+
+  @override
+  void initState() {
+    super.initState();
+    _getLocation(); // Fetch location when the screen loads
+  }
+
+  // Fetch the user's location
+  Future<void> _getLocation() async {
+    bool serviceEnabled;
+    LocationPermission permission;
+
+    // Check if location services are enabled
+    serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location services are disabled. Please enable them.')),
+      );
+      return;
+    }
+
+    // Check location permission
+    permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Location permissions are denied. Please allow access.')),
+        );
+        return;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'Location permissions are permanently denied. Please enable them in the app settings.',
+          ),
+        ),
+      );
+      return;
+    }
+
+    // Try to fetch the location
+    try {
+      final position = await Geolocator.getCurrentPosition();
+      setState(() {
+        locationLat = position.latitude;
+        locationLon = position.longitude;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Location fetched successfully')),
+      );
+    } catch (e) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to fetch location: $e')),
+      );
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final screenWidth = MediaQuery.of(context).size.width;
-    final screenHeight = MediaQuery.of(context).size.height;
 
     return Scaffold(
-      backgroundColor: const Color.fromARGB(255, 86, 55, 157), // Purple background
+      backgroundColor: const Color.fromARGB(255, 86, 55, 157),
       appBar: AppBar(
         backgroundColor: const Color.fromARGB(255, 86, 55, 157),
         elevation: 0,
@@ -41,16 +103,11 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Title
               _buildTitle(),
               const SizedBox(height: 30),
-
-              // Email Field
               _buildLabel('Email'),
               _buildTextField('Enter your email', emailController, false),
               const SizedBox(height: 20),
-
-              // Password Field
               _buildLabel('Password'),
               _buildPasswordField(
                 controller: passwordController,
@@ -62,8 +119,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 },
               ),
               const SizedBox(height: 20),
-
-              // Re-Enter Password Field
               _buildLabel('Re-Enter Password'),
               _buildPasswordField(
                 controller: rePasswordController,
@@ -75,8 +130,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
                 },
               ),
               const SizedBox(height: 50),
-
-              // Continue Button
               _buildContinueButton(context),
             ],
           ),
@@ -85,7 +138,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  /// Builds the Title Section
   Widget _buildTitle() {
     return const Center(
       child: Text(
@@ -100,7 +152,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  /// Builds the Label for Input Fields
   Widget _buildLabel(String label) {
     return Text(
       label,
@@ -112,7 +163,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  /// Builds a TextField for Input
   Widget _buildTextField(String hintText, TextEditingController controller, bool isPassword) {
     return TextField(
       controller: controller,
@@ -138,7 +188,6 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  /// Builds a Password Field with Visibility Toggle
   Widget _buildPasswordField({
     required TextEditingController controller,
     required bool isVisible,
@@ -175,75 +224,71 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  /// Builds the Continue Button
   Widget _buildContinueButton(BuildContext context) {
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final buttonWidth = constraints.maxWidth * 0.6;
+    return Center(
+      child: ElevatedButton(
+        onPressed: () async {
+          final email = emailController.text.trim();
+          final password = passwordController.text.trim();
+          final rePassword = rePasswordController.text.trim();
 
-        return Center(
-          child: Container(
-            width: buttonWidth.clamp(200.0, 400.0),
-            height: 50.0,
-            decoration: BoxDecoration(
-              gradient: const LinearGradient(
-                colors: [
-                  Color(0xFFE9E923),
-                  Color(0xFFCAA470),
-                  Color(0xFF972EF2),
-                ],
-                stops: [0.0, 0.37, 1.0],
-                begin: Alignment.topLeft,
-                end: Alignment.bottomRight,
-              ),
-              borderRadius: BorderRadius.circular(30),
-            ),
-            child: TextButton(
-              onPressed: () async {
-                // Input validation
-                final email = emailController.text.trim();
-                final password = passwordController.text.trim();
-                final rePassword = rePasswordController.text.trim();
+          if (email.isEmpty || password.isEmpty || rePassword.isEmpty) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('All fields are required')),
+            );
+            return;
+          }
 
-                if (email.isEmpty || password.isEmpty || rePassword.isEmpty) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('All fields are required')),
-                  );
-                  return;
-                }
+          if (password != rePassword) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Passwords do not match')),
+            );
+            return;
+          }
 
-                if (password != rePassword) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Passwords do not match')),
-                  );
-                  return;
-                }
+          if (locationLat == null || locationLon == null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Failed to fetch location')),
+            );
+            return;
+          }
 
-                try {
-                  Navigator.pushNamed(
-                    context,
-                    '/createAccount2',
-                    arguments: {"email": email, "password": password},
-                  );
-                } catch (e) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Error connecting to server')),
-                  );
-                }
-              },
-              child: const Text(
-                'Continue ->',
-                style: TextStyle(
-                  fontFamily: 'Poppins',
-                  fontSize: 15,
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ),
-        );
-      },
+          final data = {
+            "email": email,
+            "password": password,
+            "location_lat": locationLat,
+            "location_lon": locationLon,
+          };
+
+          try {
+            final response = await http.post(
+              Uri.parse('https://your-backend-url.com/register'),
+              headers: {"Content-Type": "application/json"},
+              body: jsonEncode(data),
+            );
+
+            if (response.statusCode == 200) {
+              ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text('Account created successfully')),
+              );
+              Navigator.pushNamed(
+                context,
+                '/createAccount2',
+                arguments: {"email": email, "password": password},
+              );
+            } else {
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(content: Text('Error: ${response.body}')),
+              );
+            }
+          } catch (e) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(content: Text('Error connecting to server')),
+            );
+          }
+        },
+        child: const Text('Create Account'),
+      ),
     );
   }
 }
