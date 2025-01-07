@@ -20,6 +20,8 @@ class _CreateAccount2ScreenState extends State<CreateAccount2Screen> {
   
   late String email;
   late String password;
+  late double locationLat;
+  late double locationLon;
 
   @override
   void didChangeDependencies() {
@@ -27,6 +29,8 @@ class _CreateAccount2ScreenState extends State<CreateAccount2Screen> {
     final args = ModalRoute.of(context)!.settings.arguments as Map<String, dynamic>;
     email = args['email'];
     password = args['password'];
+    locationLat = args['locationLat'];
+    locationLon = args['locationLon'];
   }
 
   @override
@@ -235,6 +239,8 @@ class _CreateAccount2ScreenState extends State<CreateAccount2Screen> {
                 name,
                 bio: bio,
                 preferences: lookingFor,
+                locationLat: locationLat,
+                locationLon: locationLon,
               );
               Navigator.pushReplacementNamed(
                 context,

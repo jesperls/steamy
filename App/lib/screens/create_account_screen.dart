@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
+import '../services/api_service.dart';
 
 class CreateAccountScreen extends StatefulWidget {
   const CreateAccountScreen({super.key});
@@ -18,6 +19,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController rePasswordController = TextEditingController();
+  final ApiService apiService = ApiService();
 
   // Location data
   double? locationLat;
@@ -26,7 +28,7 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
   @override
   void initState() {
     super.initState();
-    _getLocation(); // Fetch location when the screen loads
+    _getLocation();
   }
 
   // Fetch the user's location
@@ -38,7 +40,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     serviceEnabled = await Geolocator.isLocationServiceEnabled();
     if (!serviceEnabled) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Location services are disabled. Please enable them.')),
+        const SnackBar(
+            content:
+                Text('Location services are disabled. Please enable them.')),
       );
       return;
     }
@@ -49,7 +53,9 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Location permissions are denied. Please allow access.')),
+          const SnackBar(
+              content: Text(
+                  'Location permissions are denied. Please allow access.')),
         );
         return;
       }
@@ -163,7 +169,8 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
     );
   }
 
-  Widget _buildTextField(String hintText, TextEditingController controller, bool isPassword) {
+  Widget _buildTextField(
+      String hintText, TextEditingController controller, bool isPassword) {
     return TextField(
       controller: controller,
       obscureText: isPassword,
@@ -256,36 +263,15 @@ class _CreateAccountScreenState extends State<CreateAccountScreen> {
           final data = {
             "email": email,
             "password": password,
-            "location_lat": locationLat,
-            "location_lon": locationLon,
+            "locationLat": locationLat,
+            "locationLon": locationLon,
           };
 
-          try {
-            final response = await http.post(
-              Uri.parse('https://your-backend-url.com/register'),
-              headers: {"Content-Type": "application/json"},
-              body: jsonEncode(data),
-            );
-
-            if (response.statusCode == 200) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text('Account created successfully')),
-              );
-              Navigator.pushNamed(
-                context,
-                '/createAccount2',
-                arguments: {"email": email, "password": password},
-              );
-            } else {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(content: Text('Error: ${response.body}')),
-              );
-            }
-          } catch (e) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Error connecting to server')),
-            );
-          }
+          Navigator.pushNamed(
+            context,
+            '/createAccount2',
+            arguments: data,
+          );
         },
         child: const Text('Create Account'),
       ),

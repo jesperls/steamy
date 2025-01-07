@@ -52,7 +52,10 @@ class _MatchPageState extends State<MatchPage> {
 
   Future<void> _preloadNextMatch() async {
     try {
-      final match = await apiService.fetchNextMatch();
+      final last_three = discoveredUsers.length > 3
+          ? discoveredUsers.sublist(discoveredUsers.length - 3)
+          : discoveredUsers;
+      final match = await apiService.fetchNextMatch(last_three);
       if (match != null) {
         setState(() {
           discoveredUsers.add(match);
@@ -75,7 +78,7 @@ class _MatchPageState extends State<MatchPage> {
 
     try {
       if (direction == CardSwiperDirection.right) {
-        await apiService.sendMatchRequest(swipedUser['id'].toString());
+        await apiService.sendMatchRequest(swipedUser['match']['id'].toString());
       }
       _preloadNextMatch();
 
@@ -171,12 +174,16 @@ class _MatchPageState extends State<MatchPage> {
                                 screenHeight,
                                 apiService.getBaseUrl +
                                     '/getImage/' +
-                                    (user['pictures']?.firstWhere((pic) =>
-                                            pic['is_profile_picture'] ==
-                                            true)['picture_url'] ??
+                                    (user['match']['pictures']?.firstWhere(
+                                            (pic) =>
+                                                pic['is_profile_picture'] ==
+                                                true)['picture_url'] ??
                                         ''),
-                                user['display_name'] ?? 'Anonymous',
-                                user['bio'] ?? 'Unknown',
+                                user['match']['display_name'] +
+                                        ' Score: ' +
+                                        user['score']?.toString() ??
+                                    'Anonymous',
+                                user['match']['bio'] ?? 'Unknown',
                               );
                             },
                             cardsCount: discoveredUsers.length,

@@ -11,6 +11,7 @@ from schemas import (
     UserAction,
     MessageGet,
     UserPicture,
+    NewMatchAction
 )
 from fastapi.responses import FileResponse
 
@@ -101,7 +102,7 @@ def get_user_summary(action: UserAction, db: Session = Depends(get_db)):
 
 # Get next match
 @app.post("/getNextMatch")
-def get_next_match(action: UserAction, db: Session = Depends(get_db)):
+def get_next_match(action: NewMatchAction, db: Session = Depends(get_db)):
     return crud.get_next_match(db=db, user_action=action)
 
 

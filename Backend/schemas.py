@@ -24,6 +24,10 @@ class UserAction(BaseModel):
     user_id: int
 
 
+class NewMatchAction(UserAction):
+    excluded_matches: list
+
+
 class UserUpdate(BaseModel):
     id: int
     email: Optional[str] = None

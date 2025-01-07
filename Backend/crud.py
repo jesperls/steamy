@@ -3,6 +3,8 @@ from sqlalchemy.sql.expression import func
 import models, schemas
 from passlib.context import CryptContext
 from sqlalchemy import and_, or_
+import math
+import random
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
@@ -55,7 +57,7 @@ def update_user(db: Session, db_user: models.User, user: schemas.UserUpdate):
     return db_user
 
 
-def get_next_match(db: Session, user_action: schemas.UserAction):
+def get_next_match(db: Session, user_action: schemas.NewMatchAction):
     # Get the current user
     current_user = (
         db.query(models.User).filter(models.User.id == user_action.user_id).first()
@@ -69,24 +71,32 @@ def get_next_match(db: Session, user_action: schemas.UserAction):
             matched_user_ids.add(m.user_id_2)
         elif m.user_id_2 == current_user.id and m.is_matched:
             matched_user_ids.add(m.user_id_1)
-    print(matched_user_ids)
-    # Query for a single potential match using order by random
-    next_match = (
+    for m in user_action.excluded_matches:
+        matched_user_ids.add(m["match"]["id"])
+    potential_matches = (
         db.query(models.User)
         .filter(
             models.User.id != current_user.id,
             ~models.User.id.in_(matched_user_ids),
         )
-        .order_by(func.random())
-        .first()
+        .all()
     )
-    if not next_match:
+
+    scored_matches = []
+    for candidate in potential_matches:
+        print(candidate.id)
+        print(candidate.pictures)
+        candidate_score = calculate_match_score(current_user, candidate)
+        scored_matches.append((candidate, candidate_score))
+
+    if not scored_matches:
         return None
-    print(next_match.id)
 
-    print(next_match.pictures)
-
-    return next_match
+    max_score = max(s[1] for s in scored_matches)
+    top_matches = [s[0] for s in scored_matches if (max_score - s[1]) <= 10]
+    chosen_match = random.choice(top_matches)
+    chosen_score = next(s[1] for s in scored_matches if s[0] == chosen_match)
+    return {"match": chosen_match, "score": chosen_score}
 
 
 def send_message(db: Session, message: schemas.MessageCreate):
@@ -238,6 +248,15 @@ def get_user_summary(db: Session, action: schemas.UserAction):
 
 
 def calculate_match_score(user1: models.User, user2: models.User) -> float:
-    if user1.display_name == "Devnull" or user2.display_name == "Devnull":
-        return 1000.0
-    return 0.0
+    # if user1.display_name == "Devnull" or user2.display_name == "Devnull":
+    #     return 1000.0
+    shared_interests = set(i.interest for i in user1.interests) & set(i.interest for i in user2.interests)
+    score = len(shared_interests) * 10
+    if user1.preferences and user2.preferences and user1.preferences == user2.preferences:
+        score += 20
+    if user1.location_lat and user1.location_lon and user2.location_lat and user2.location_lon:
+        lat_diff = user1.location_lat - user2.location_lat
+        lon_diff = user1.location_lon - user2.location_lon
+        distance = math.sqrt(lat_diff**2 + lon_diff**2)
+        score -= distance
+    return int(score) + 1000

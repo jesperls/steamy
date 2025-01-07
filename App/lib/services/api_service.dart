@@ -92,12 +92,12 @@ class ApiService {
     }
   }
 
-  Future<Map<String, dynamic>?> fetchNextMatch() async {
+  Future<Map<String, dynamic>?> fetchNextMatch(List<Map<String, dynamic>> excludedMatches) async {
     final userId = await SharedPreferences.getInstance().then((prefs) => prefs.getString('userId'));
     final response = await http.post(
       Uri.parse('$baseUrl/getNextMatch'),
       headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({'user_id': userId}),
+      body: jsonEncode({'user_id': userId, 'excluded_matches': excludedMatches}),
     );
     if (response.statusCode == 200) {
       final data = jsonDecode(response.body);
