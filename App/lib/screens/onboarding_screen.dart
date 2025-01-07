@@ -219,7 +219,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
               try {
                 final response = await apiService.loginUser(email, password);
                 if (response['id'] != null) {
-                  Navigator.pushReplacementNamed(context, '/message-screen');
+                  Navigator.pushReplacementNamed(context, '/matching_page');
                 } else {
                   ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Login failed')),

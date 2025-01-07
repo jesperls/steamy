@@ -229,7 +229,7 @@ class _MessagePageState extends State<MessagePage> {
                         : const SizedBox(),
 
                     const SizedBox(height: 10),
-
+                    
                     // Main list or empty state
                     filteredMatches.isEmpty
                         ? const Expanded(
@@ -253,7 +253,7 @@ class _MessagePageState extends State<MessagePage> {
                                   ),
                                   title: Text(match['name']!),
                                   trailing: const Icon(Icons.message,
-                                      color: Colors.green),
+                                      color: Color(0xFF972EF2)),
                                   onTap: () => _navigateToChatScreen(match),
                                 );
                               },

@@ -106,6 +106,7 @@ class _EditAccountScreenState extends State<EditAccountScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Edit Account'),
+        foregroundColor: Colors.white,
         backgroundColor: const Color.fromARGB(255, 86, 55, 157),
       ),
       body: SingleChildScrollView(

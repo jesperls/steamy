@@ -244,7 +244,7 @@ class _CreateAccount2ScreenState extends State<CreateAccount2Screen> {
               );
               Navigator.pushReplacementNamed(
                 context,
-                '/message-screen',
+                '/matching_page',
                 arguments: userData,
               );
             } catch (e) {
