@@ -1,5 +1,5 @@
 INSERT INTO users (email, display_name, password_hash, bio, preferences, location_lat, location_lon) VALUES
-('Devnull@darkrage.com', 'Devnull', 'hashed_password1', 'I push big red buttons.', NULL, 59.334591, 18.063240),
+('Devnull@darkrage.com', 'Devnull', '$2b$12$dKq3nv1hcWsPek50GSJWC.I6h9lKtAJHbnNV16JOVVVK5eMIZLi0m', 'I push big red buttons.', NULL, 59.334591, 18.063240),
 ('Orsi@darkrage.com', 'Orsi', 'hashed_password2', 'I squeak on Mondays.', NULL, 57.708870, 11.974560),
 ('Rando@darkrage.com', 'John', 'hashed_password3', 'Life is short, code faster.', NULL, 60.128161, 18.643501),
 ('Rando1@darkrage.com', 'Sam', 'hashed_password3', 'Coffee powers my mind.', NULL, 56.046467, 12.694512),
@@ -46,7 +46,8 @@ INSERT INTO user_pictures (user_id, picture_url, is_profile_picture) VALUES
 (14, '14.jpg', TRUE),
 (14, '14.jpg', FALSE),
 (15, '15.jpg', TRUE),
-(15, '15.jpg', FALSE);
+(15, '15.jpg', FALSE),
+(16, 'default.jpg', True);
 
 INSERT INTO user_interests (user_id, interest) VALUES
 (1, 'Sleap'),
