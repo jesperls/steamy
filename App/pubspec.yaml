@@ -1,4 +1,4 @@
-name: steamy
+name: Steamy
 description: "A new Flutter project."
 version: 0.1.0
 
@@ -14,6 +14,7 @@ dependencies:
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.3.5
   geolocator: ^9.0.0
+  flutter_launcher_icons: ^0.14.2
 
 
 dev_dependencies:
@@ -27,7 +28,12 @@ dev_dependencies:
   mocktail: ^1.0.4
 
 
-
+flutter_launcher_icons:
+  android: true
+  ios: false
+  image_path: "assets/icon/icon.png"
+  adaptive_icon_background: "#de0d67"
+  adaptive_icon_foreground: "assets/icon/icon.png"
 
 flutter:
   uses-material-design: true
