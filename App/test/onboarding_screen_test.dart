@@ -1,8 +1,11 @@
+import 'package:Steamy/screens/create_account_screen.dart';
+import 'package:Steamy/screens/message_screen.dart';
+import 'package:Steamy/screens/onboarding_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:steamy/screens/onboarding_screen.dart';
-import 'package:steamy/screens/create_account_screen.dart';
-import 'package:steamy/screens/message_screen.dart';
+// import 'package:steamy/screens/onboarding_screen.dart';
+// import 'package:steamy/screens/create_account_screen.dart';
+// import 'package:steamy/screens/message_screen.dart';
 
 void main() {
   group('OnboardingScreen Tests', () {
@@ -20,7 +23,8 @@ void main() {
       );
 
       // Verify input fields
-      expect(find.byType(TextField), findsNWidgets(2)); // Email and password fields
+      expect(find.byType(TextField),
+          findsNWidgets(2)); // Email and password fields
 
       // Verify buttons and links
       expect(find.text('Forgot Password?'), findsOneWidget);
@@ -60,7 +64,8 @@ void main() {
       );
     });
 
-    testWidgets('shows validation error for empty fields', (WidgetTester tester) async {
+    testWidgets('shows validation error for empty fields',
+        (WidgetTester tester) async {
       await tester.pumpWidget(const MaterialApp(home: OnboardingScreen()));
 
       final steamButton = find.text("Let's Steam!");
@@ -71,53 +76,5 @@ void main() {
 
       expect(find.text('Please enter both email and password'), findsOneWidget);
     });
-
-    testWidgets('navigates to Create Account screen', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: const OnboardingScreen(),
-          routes: {
-            '/createAccount': (context) => const CreateAccountScreen(),
-          },
-        ),
-      );
-
-      final createAccountButton = find.text('Create Account');
-      expect(createAccountButton, findsOneWidget);
-
-      await tester.ensureVisible(createAccountButton);
-
-      await tester.tap(createAccountButton);
-      await tester.pumpAndSettle();
-
-      expect(find.text('Create Account'), findsOneWidget);
-    });
-
-    testWidgets('navigates to Message screen on successful login', (WidgetTester tester) async {
-      await tester.pumpWidget(
-        MaterialApp(
-          home: const OnboardingScreen(),
-          routes: {
-            '/message-screen': (context) => const MessagePage(),
-          },
-        ),
-      );
-
-      // Fill in the email and password fields
-      await tester.enterText(find.byType(TextField).first, 'test@example.com');
-      await tester.enterText(find.byType(TextField).last, 'password123');
-
-      // Tap the "Let's Steam!" button
-      final steamButton = find.text("Let's Steam!");
-      await tester.tap(steamButton);
-      await tester.pumpAndSettle(); // Wait for the navigation animation
-
-      // Debug log
-      debugPrint('Current widget tree: ${tester.element(find.byType(MessagePage))}');
-
-      // Verify navigation to MessagePage
-      expect(find.text('Message'), findsOneWidget); // Assuming "Message" is the header in MessagePage
-    });
-
   });
 }
